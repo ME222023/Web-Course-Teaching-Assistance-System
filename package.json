@@ -16,6 +16,7 @@
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",
     "@vueuse/rxjs": "^10.10.0",
+    "dayjs": "^1.11.11",
     "dexie": "^4.0.7",
     "element-plus": "^2.7.4",
     "jose": "^5.3.0",

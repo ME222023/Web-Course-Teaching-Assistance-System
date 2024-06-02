@@ -27,7 +27,12 @@
           </template>
         </el-form-item>
         <el-form-item label="昵称" prop="nickname">
-          <el-input v-model="userInfoForm.nickname" placeholder="请输入昵称"></el-input>
+          <el-input
+            v-model="userInfoForm.nickname"
+            placeholder="请输入昵称"
+            :maxlength="20"
+            show-word-limit
+          ></el-input>
         </el-form-item>
         <el-form-item label="个人签名" prop="bio">
           <el-input

@@ -11,6 +11,9 @@ dependencies:
   '@vueuse/rxjs':
     specifier: ^10.10.0
     version: 10.10.0(rxjs@7.8.1)
+  dayjs:
+    specifier: ^1.11.11
+    version: 1.11.11
   dexie:
     specifier: ^4.0.7
     version: 4.0.7

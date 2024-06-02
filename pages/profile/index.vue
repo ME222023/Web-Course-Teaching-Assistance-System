@@ -1,6 +1,10 @@
 <template>
   <div>
     <el-tabs class="mt-12 ml-6" tab-position="left">
+      <el-tab-pane label="实验完成情况">
+        <!-- TODO -->
+        TODO
+      </el-tab-pane>
       <el-tab-pane label="个人资料">
         <edit-profile />
       </el-tab-pane>
@@ -16,6 +20,6 @@
   import EditPassword from './components/edit-password.vue'
 
   useHead({
-    title: '个人资料',
+    title: '个人中心',
   })
 </script>

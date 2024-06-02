@@ -6,8 +6,13 @@
       </el-menu-item>
       <div class="flex-grow"></div>
       <el-sub-menu v-if="loggedIn" index="1">
-        <template #title>{{ userInfo?.nickname || userInfo?.username }}</template>
-        <el-menu-item @click="$router.push('/profile')">个人资料</el-menu-item>
+        <template #title>
+          <div @click="$router.push('/profile')">
+            {{ userInfo?.nickname || userInfo?.username }}
+          </div>
+        </template>
+        <el-menu-item @click="$router.push('/profile')">个人中心</el-menu-item>
+        <el-menu-item v-if="isTeacher" @click="$router.push('/manager')"> 系统管理 </el-menu-item>
         <el-menu-item @click="onClickLogout">退出登录</el-menu-item>
       </el-sub-menu>
       <el-menu-item v-else @click="$router.push('/login')">登录</el-menu-item>
@@ -17,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-  const { userInfo, token, loggedIn } = storeToRefs(useUserStore())
+  const { userInfo, token, loggedIn, isTeacher } = storeToRefs(useUserStore())
   const router = useRouter()
 
   async function onClickLogout() {

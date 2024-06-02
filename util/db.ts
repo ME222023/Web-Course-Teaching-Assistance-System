@@ -12,7 +12,7 @@ function initDatabase() {
   if (db.isOpen()) return
   // https://dexie.org/docs/Version/Version.stores()#indexable-types
   db.version(1).stores({
-    users: '++id, username, isDeleted',
+    users: '++id, username, nickname, isDeleted, role, [id+isDeleted]',
   })
 }
 
@@ -64,9 +64,10 @@ export async function verifyToken(token: string) {
   return user
 }
 
-export async function updateUserInfo(id: number, updates: Partial<UserInfo>) {
+/** 更新用户信息 */
+export async function updateUserInfo(userId: number, updates: Partial<UserInfo>) {
   initDatabase()
-  const count = await db.users.where({ id }).modify(updates)
+  const count = await db.users.where({ id: userId }).modify(updates)
 
   if (!count) throw new Error('用户不存在')
 }
@@ -89,4 +90,34 @@ export async function changePassword(userId: number, oldPassword: string, newPas
     .modify({ password: encryptedPassword, passwordSalt: salt, version: user.version + 1 })
 
   return signToken(userId, user.version + 1)
+}
+
+export interface ListUserOptions {
+  /** 页码，从 1 开始 */
+  page?: number
+  /** 每页的数量 */
+  pageSize?: number
+  /** 用户名关键词 */
+  keyword?: string
+}
+
+export async function listUser(
+  options?: ListUserOptions,
+): Promise<{ total: number; users: UserInfo[] }> {
+  initDatabase()
+  let { page = 1, pageSize = 10, keyword } = options || {}
+  const offset = (page - 1) * pageSize
+  if (keyword) keyword = keyword.trim().toLowerCase()
+  const query = db.users.where({ isDeleted: 0 })
+  if (keyword) {
+    query.and(
+      (user) =>
+        user.username.toLowerCase().includes(keyword) ||
+        !!user.nickname?.toLowerCase().includes(keyword),
+    )
+  }
+  const total = await query.count()
+  const users = await query.offset(offset).limit(pageSize).toArray()
+
+  return { total, users }
 }
