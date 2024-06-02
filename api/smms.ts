@@ -1,8 +1,8 @@
 // sm.ms 图床的 API
 
-const baseUrl = 'https://sm.ms/api/v2/';
+import { SMMS_TOEKN } from "~/constants";
 
-const token = import.meta.env.SMMS_TOKEN;
+const baseUrl = 'https://sm.ms/api/v2/';
 
 export interface UploadImageResponse {
   success: boolean;
@@ -31,7 +31,7 @@ async function uploadImage(file: File): Promise<UploadImageResponse> {
   const response = await fetch(`${baseUrl}upload`, {
     method: 'POST',
     headers: {
-      'Authorization': token
+      'Authorization': SMMS_TOEKN
     },
     body: formData
   });

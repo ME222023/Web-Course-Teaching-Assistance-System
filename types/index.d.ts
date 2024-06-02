@@ -1,5 +1,7 @@
 /** 数据的创建时间全部使用精确到毫秒的时间戳。 */
 export type Timestamp = number
+/** Dexie 不支持使用 boolean 作为索引，所以这里使用 number。`1` 代表已删除，`0` 代表 */
+export type IsDeletedFlag = number
 
 export interface User {
   id: number
@@ -18,7 +20,9 @@ export interface User {
   avatarUrl?: string
   /** 个人简介 */
   bio?: string
-  isDeleted: boolean
+  /** 用户是否被删除。 */
+  isDeleted: IsDeletedFlag
+  version: number
 }
 
 export interface ExerciseMedia {
@@ -41,7 +45,7 @@ export interface Exercise {
   media: ExerciseMedia[]
   /** 题目是否已被发布。学生默认只能看到已发布的内容。 */
   published: boolean
-  isDeleted: boolean
+  isDeleted: IsDeletedFlag
 }
 
 export enum SolutionStatus {
