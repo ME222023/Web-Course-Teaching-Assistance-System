@@ -5,27 +5,25 @@ export const useUserStore = defineStore('user', () => {
   const router = useRouter()
   const token = useLocalStorage<string | undefined>('web-oj-token', '', { initOnMounted: true })
   const userInfo = ref<User>()
+  const loggedIn = computed(() => !!userInfo.value)
 
   onNuxtReady(() => {
-    function logout() {
-      userInfo.value = undefined
-      if (
-        router.currentRoute.value.path !== '/login' &&
-        router.currentRoute.value.path !== '/register'
-      ) {
-        ElMessage.error('请先登录')
-        router.replace('/login')
-      }
-    }
     watchEffect(async () => {
       if (!token.value) {
-        return logout()
+        return
       }
       try {
         userInfo.value = await verifyToken(token.value)
-      } catch (error) {
+      } catch (error: any) {
         token.value = undefined
-        return logout()
+        userInfo.value = undefined
+        if (
+          router.currentRoute.value.path !== '/login' &&
+          router.currentRoute.value.path !== '/register'
+        ) {
+          ElMessage.error(error.message)
+          router.replace('/login')
+        }
       }
     })
   })
@@ -33,5 +31,6 @@ export const useUserStore = defineStore('user', () => {
   return {
     token,
     userInfo,
+    loggedIn,
   }
 })

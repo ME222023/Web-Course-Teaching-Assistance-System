@@ -5,10 +5,11 @@
         <h2> SZU Web OJ </h2>
       </el-menu-item>
       <div class="flex-grow"></div>
-      <el-sub-menu index="1">
+      <el-sub-menu v-if="loggedIn" index="1">
         <template #title>{{ userInfo?.nickname || userInfo?.username }}</template>
         <el-menu-item index="1-1" @click="onClickLogout">退出登录</el-menu-item>
       </el-sub-menu>
+      <el-menu-item v-else @click="$router.push('/login')">登录</el-menu-item>
     </el-menu>
     <slot></slot>
     2
@@ -16,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-  const { userInfo, token } = storeToRefs(useUserStore())
+  const { userInfo, token, loggedIn } = storeToRefs(useUserStore())
   const router = useRouter()
 
   async function onClickLogout() {
