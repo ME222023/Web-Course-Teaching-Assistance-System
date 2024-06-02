@@ -8,7 +8,6 @@ export const useUserStore = defineStore('user', () => {
 
   onNuxtReady(() => {
     function logout() {
-      token.value = undefined
       userInfo.value = undefined
       if (
         router.currentRoute.value.path !== '/login' &&
@@ -25,6 +24,7 @@ export const useUserStore = defineStore('user', () => {
       try {
         userInfo.value = await verifyToken(token.value)
       } catch (error) {
+        token.value = undefined
         return logout()
       }
     })
