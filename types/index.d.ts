@@ -17,13 +17,15 @@ export interface User {
   /** 用户的昵称 */
   nickname?: string
   /** 头像链接 */
-  avatarUrl?: string
+  avatar?: string
   /** 个人简介 */
   bio?: string
   /** 用户是否被删除。 */
   isDeleted: IsDeletedFlag
   version: number
 }
+
+export type UserInfo = Pick<User, 'id' | 'username' | 'role' | 'nickname' | 'avatar' | 'bio'>
 
 export interface ExerciseMedia {
   type: 'image' | 'video'

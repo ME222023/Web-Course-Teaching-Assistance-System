@@ -49,6 +49,9 @@
   definePageMeta({
     layout: 'login-register',
   })
+  useHead({
+    title: '登录',
+  })
 
   const userStore = useUserStore()
   const router = useRouter()

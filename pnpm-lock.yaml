@@ -26,6 +26,9 @@ dependencies:
   rxjs:
     specifier: ^7.8.1
     version: 7.8.1
+  vue-advanced-cropper:
+    specifier: ^2.8.8
+    version: 2.8.8
 
 devDependencies:
   '@element-plus/nuxt':
@@ -3394,6 +3397,10 @@ packages:
       consola: 3.2.3
     dev: true
 
+  /classnames@2.5.1:
+    resolution: {integrity: sha512-saHYOzhIQs6wy2sVxTM6bUDsQO4F50V9RQ22qBpEdCW+I+/Wmke2HOl6lS6dTpdxVhb88/I6+Hs+438c3lfUow==}
+    dev: false
+
   /clean-stack@2.2.0:
     resolution: {integrity: sha512-4diC9HaTE+KRAMWhDhrGOECgWZxoevMc5TlkObMqNSsVU62PYzXZ/SMTjzyGAFF1YusgxGcSWTEXBhp0CPwQ1A==}
     engines: {node: '>=6'}
@@ -3697,6 +3704,10 @@ packages:
         optional: true
     dev: true
 
+  /debounce@1.2.1:
+    resolution: {integrity: sha512-XRRe6Glud4rd/ZGQfiV1ruXSfbvfJedlV9Y6zOlP+2K04vBYiJEte6stfFkCP03aMnY5tsipamumUjL14fofug==}
+    dev: false
+
   /debug@2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}
     peerDependencies:
@@ -3881,6 +3892,10 @@ packages:
   /eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
     dev: true
+
+  /easy-bem@1.1.1:
+    resolution: {integrity: sha512-GJRqdiy2h+EXy6a8E6R+ubmqUM08BK0FWNq41k24fup6045biQ8NXxoXimiwegMQvFFV3t1emADdGNL1TlS61A==}
+    dev: false
 
   /ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
@@ -7738,6 +7753,20 @@ packages:
   /vscode-uri@3.0.8:
     resolution: {integrity: sha512-AyFQ0EVmsOZOlAnxoFOGOq1SQDWAB7C6aqMGS23svWAllfOaxbuFvcT8D1i8z3Gyn8fraVeZNNmN6e9bxxXkKw==}
     dev: true
+
+  /vue-advanced-cropper@2.8.8:
+    resolution: {integrity: sha512-yDM7Jb/gnxcs//JdbOogBUoHr1bhCQSto7/ohgETKAe4wvRpmqIkKSppMm1huVQr+GP1YoVlX/fkjKxvYzwwDQ==}
+    engines: {node: '>=8', npm: '>=5'}
+    peerDependencies:
+      vue: ^3.0.0
+    peerDependenciesMeta:
+      vue:
+        optional: true
+    dependencies:
+      classnames: 2.5.1
+      debounce: 1.2.1
+      easy-bem: 1.1.1
+    dev: false
 
   /vue-bundle-renderer@2.1.0:
     resolution: {integrity: sha512-uZ+5ZJdZ/b43gMblWtcpikY6spJd0nERaM/1RtgioXNfWFbjKlUwrS8HlrddN6T2xtptmOouWclxLUkpgcVX3Q==}

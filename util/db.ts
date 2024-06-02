@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie'
-import type { User } from '~/types'
+import type { User, UserInfo } from '~/types'
 import { encryptPassword, generateSalt, verifyPassword } from './crypto'
 import { parseToken, signToken } from './jwt'
 
@@ -62,4 +62,31 @@ export async function verifyToken(token: string) {
   if (user.version !== payload.version) throw new Error('Token 已过期')
 
   return user
+}
+
+export async function updateUserInfo(id: number, updates: Partial<UserInfo>) {
+  initDatabase()
+  const count = await db.users.where({ id }).modify(updates)
+
+  if (!count) throw new Error('用户不存在')
+}
+
+/** 修改密码。修改成功后，原来的 token 会失效，需要用本函数返回的 token 替换掉原有的 */
+export async function changePassword(userId: number, oldPassword: string, newPassword: string) {
+  initDatabase()
+  const user = await db.users.where({ id: userId, isDeleted: 0 }).first()
+
+  if (!user) throw new Error('用户不存在')
+  if (!(await verifyPassword(user.passwordSalt, oldPassword, user.password))) {
+    throw new Error('旧密码错误')
+  }
+
+  const salt = await generateSalt()
+  const encryptedPassword = await encryptPassword(newPassword, salt)
+
+  await db.users
+    .where({ id: userId })
+    .modify({ password: encryptedPassword, passwordSalt: salt, version: user.version + 1 })
+
+  return signToken(userId, user.version + 1)
 }

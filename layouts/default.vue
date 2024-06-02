@@ -7,12 +7,12 @@
       <div class="flex-grow"></div>
       <el-sub-menu v-if="loggedIn" index="1">
         <template #title>{{ userInfo?.nickname || userInfo?.username }}</template>
-        <el-menu-item index="1-1" @click="onClickLogout">退出登录</el-menu-item>
+        <el-menu-item @click="$router.push('/profile')">个人资料</el-menu-item>
+        <el-menu-item @click="onClickLogout">退出登录</el-menu-item>
       </el-sub-menu>
       <el-menu-item v-else @click="$router.push('/login')">登录</el-menu-item>
     </el-menu>
     <slot></slot>
-    2
   </div>
 </template>
 

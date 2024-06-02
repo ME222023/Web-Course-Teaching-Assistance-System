@@ -65,6 +65,9 @@
   definePageMeta({
     layout: 'login-register',
   })
+  useHead({
+    title: '注册',
+  })
 
   const userStore = useUserStore()
   const router = useRouter()
@@ -76,10 +79,13 @@
   })
   const loading = ref(false)
   const rules: FormRules<Form> = {
-    password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
-    username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+    username: [{ required: true, message: '请输入用户名', trigger: 'change' }],
+    password: [
+      { required: true, message: '请输入密码', trigger: 'change' },
+      { min: 6, message: '密码长度不能小于 6 位', trigger: 'change' },
+    ],
     confirmPassword: [
-      { required: true, message: '请再次输入密码', trigger: 'blur' },
+      { required: true, message: '请再次输入密码', trigger: 'change' },
       {
         validator: (_, value, callback) => {
           if (value !== form.value.password) {
@@ -88,7 +94,7 @@
             callback()
           }
         },
-        trigger: ['blur', 'change'],
+        trigger: 'change',
       },
     ],
   }
