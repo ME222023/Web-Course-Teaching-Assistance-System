@@ -2,6 +2,7 @@ import Dexie, { type EntityTable } from 'dexie'
 import type { User, UserInfo, UserRole } from '~/types'
 import { encryptPassword, generateSalt, verifyPassword } from './crypto'
 import { parseToken, signToken } from './jwt'
+import dayjs from './dayjs'
 
 /** 初始化数据库实例，并用 TypeScript 类型设置好表的结构，方面开发 */
 const db = new Dexie('weboj-db') as Dexie & {
@@ -23,7 +24,7 @@ function initDatabase() {
 export async function login(username: string, password: string) {
   initDatabase()
   const userStore = useUserStore()
-  const now = Date.now()
+  const now = dayjs()
 
   // 连续失败 5 次，5 分钟内禁止登录
   const failRecords = userStore.loginFailRecords.filter((r) => r.username === username)
@@ -31,8 +32,8 @@ export async function login(username: string, password: string) {
 
   if (last5FailRecords.length === 5) {
     const firstFailTime = last5FailRecords[0].timestamp
-    if (now - firstFailTime < 5 * 60 * 1000) {
-      throw new Error('失败次数过多，请稍后再试')
+    if (now.valueOf() - firstFailTime < 5 * 60 * 1000) {
+      throw new Error(`错误次数过多，请 ${dayjs(firstFailTime).add(5, 'm').to(now, true)}后再试`)
     } else {
       // 清空失败记录
       userStore.loginFailRecords = userStore.loginFailRecords.filter((r) => r.username !== username)
@@ -43,7 +44,7 @@ export async function login(username: string, password: string) {
   if (!user) throw new Error('用户名或密码错误')
 
   if (!(await verifyPassword(user.passwordSalt, password, user.password))) {
-    userStore.loginFailRecords.push({ username, timestamp: now })
+    userStore.loginFailRecords.push({ username, timestamp: now.valueOf() })
     throw new Error('用户名或密码错误')
   }
   if (user.isDisabled) throw new Error('用户已被禁用，请联系管理员')
