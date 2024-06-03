@@ -90,3 +90,8 @@ export interface SiteConfig {
   /** 是否启用注册，默认 `true` */
   registerEnabled: boolean
 }
+
+export interface LoginFailRecord {
+  username: string
+  timestamp: Timestamp
+}

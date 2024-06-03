@@ -1,9 +1,12 @@
-import type { UserInfo } from '~/types'
+import { type LoginFailRecord, type UserInfo } from '~/types'
 import { verifyToken } from '~/util/db'
 
 export const useUserStore = defineStore('user', () => {
   const router = useRouter()
   const token = useLocalStorage<string | undefined>('web-oj-token', '', { initOnMounted: true })
+  const loginFailRecords = useLocalStorage<LoginFailRecord[]>('web-oj-login-fail-records', [], {
+    initOnMounted: true,
+  })
 
   const userInfo = ref<UserInfo>()
   const loggedIn = computed(() => !!userInfo.value)
@@ -40,6 +43,8 @@ export const useUserStore = defineStore('user', () => {
     token,
     userInfo,
     loggedIn,
+
+    loginFailRecords,
 
     isStudent,
     isTeacher,

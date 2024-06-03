@@ -22,14 +22,33 @@ function initDatabase() {
 
 export async function login(username: string, password: string) {
   initDatabase()
+  const userStore = useUserStore()
+  const now = Date.now()
+
+  // 连续失败 5 次，5 分钟内禁止登录
+  const failRecords = userStore.loginFailRecords.filter((r) => r.username === username)
+  const last5FailRecords = failRecords.slice(-5)
+
+  if (last5FailRecords.length === 5) {
+    const lastFailTime = last5FailRecords[0].timestamp
+    if (now - lastFailTime < 5 * 60 * 1000) {
+      throw new Error('失败次数过多，请稍后再试')
+    } else {
+      // 清空失败记录
+      userStore.loginFailRecords = userStore.loginFailRecords.filter((r) => r.username !== username)
+    }
+  }
   const user = await db.users.where({ username, isDeleted: 0 }).first()
 
   if (!user) throw new Error('用户名或密码错误')
 
   if (!(await verifyPassword(user.passwordSalt, password, user.password))) {
+    userStore.loginFailRecords.push({ username, timestamp: now })
     throw new Error('用户名或密码错误')
   }
   if (user.isDisabled) throw new Error('用户已被禁用，请联系管理员')
+
+  userStore.loginFailRecords = userStore.loginFailRecords.filter((r) => r.username !== username)
 
   return signToken(user.id, user.version)
 }
