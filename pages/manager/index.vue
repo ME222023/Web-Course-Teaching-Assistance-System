@@ -8,7 +8,6 @@
         <!-- TODO -->
         TODO
       </el-tab-pane>
-      <el-tab-pane label="站点设置"></el-tab-pane>
     </el-tabs>
   </div>
 </template>

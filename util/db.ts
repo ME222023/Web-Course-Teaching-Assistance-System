@@ -3,6 +3,7 @@ import type { User, UserInfo, UserRole } from '~/types'
 import { encryptPassword, generateSalt, verifyPassword } from './crypto'
 import { parseToken, signToken } from './jwt'
 
+/** 初始化数据库实例，并用 TypeScript 类型设置好表的结构，方面开发 */
 const db = new Dexie('weboj-db') as Dexie & {
   users: EntityTable<User, 'id'>
 }
@@ -10,7 +11,10 @@ const db = new Dexie('weboj-db') as Dexie & {
 // 初始化数据库，在下方每个函数中都要调用
 function initDatabase() {
   if (db.isOpen()) return
-  // https://dexie.org/docs/Version/Version.stores()#indexable-types
+  /**
+   * 初始化数据库的索引结构。Dexie 只需要初始化索引字段即可，不需要定义表结构（只用设置 TypeScript 类型，在上面）。
+   * https://dexie.org/docs/Version/Version.stores()#indexable-types
+   */
   db.version(1).stores({
     users: '++id, username, nickname, isDeleted, role, [id+isDeleted], isDisabled',
   })
@@ -59,12 +63,16 @@ export async function register(username: string, password: string) {
   return signToken(userId, 0)
 }
 
+async function getUser(userId: number) {
+  const user = await db.users.where({ id: userId, isDeleted: 0 }).first()
+  if (!user) throw new Error('用户不存在')
+  return user
+}
+
 export async function verifyToken(token: string) {
   const payload = await parseToken(token)
   initDatabase()
-  const user = await db.users.where({ id: payload.userId, isDeleted: 0 }).first()
-
-  if (!user) throw new Error('用户不存在')
+  const user = await getUser(payload.userId)
   if (user.version !== payload.version) throw new Error('Token 已过期')
 
   return user
@@ -81,9 +89,8 @@ export async function updateUserInfo(userId: number, updates: Partial<UserInfo>)
 /** 修改密码。修改成功后，原来的 token 会失效，需要用本函数返回的 token 替换掉原有的 */
 export async function changePassword(userId: number, oldPassword: string, newPassword: string) {
   initDatabase()
-  const user = await db.users.where({ id: userId, isDeleted: 0 }).first()
+  const user = await getUser(userId)
 
-  if (!user) throw new Error('用户不存在')
   if (!(await verifyPassword(user.passwordSalt, oldPassword, user.password))) {
     throw new Error('旧密码错误')
   }
