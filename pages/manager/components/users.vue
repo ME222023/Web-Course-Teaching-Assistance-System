@@ -39,7 +39,7 @@
         ></el-input>
       </div>
 
-      <el-table v-loading="loading" :data="users" class-name="mt-4 w-10">
+      <el-table v-loading="loading" :data="users" class-name="mt-4 w-10 !max-w-240">
         <el-table-column prop="username" label="用户名" min-width="160" fixed></el-table-column>
         <el-table-column prop="avatar" label="头像" min-width="80">
           <template #default="{ row }">
@@ -68,10 +68,24 @@
             </el-tooltip>
           </template>
         </el-table-column>
-        <el-table-column label="操作" min-width="200px">
+        <el-table-column label="操作" min-width="300px">
           <template #default="{ row }">
             <!-- 只能对别人进行操作 -->
             <template v-if="row.id !== userStore.userInfo?.id">
+              <!-- 切换身份 -->
+              <el-popconfirm
+                :title="`是否要切换此用户的身份为${row.role === 'teacher' ? '学生' : '老师'}？`"
+                width="200"
+                placement="top"
+                @confirm="onClickToggleUserRole(row)"
+              >
+                <template #reference>
+                  <el-button type="primary" link>
+                    {{ row.role === 'teacher' ? '转为学生' : '转为老师' }}
+                  </el-button>
+                </template>
+              </el-popconfirm>
+
               <!-- 重置密码 -->
               <el-popconfirm
                 title="是否要重置此用户的密码？"
@@ -128,7 +142,14 @@
 
 <script setup lang="ts">
   import type { UserInfo, UserRole } from '~/types'
-  import { disableUser, enableUser, listUser, resetPassword, deleteUser } from '~/util/db'
+  import {
+    disableUser,
+    enableUser,
+    listUser,
+    resetPassword,
+    deleteUser,
+    updateUserInfo,
+  } from '~/util/db'
   import { handleError } from '~/util/error_parser'
   import dayjs from '~/util/dayjs'
 
@@ -187,6 +208,17 @@
     try {
       if (user.isDisabled) await enableUser(user.id)
       else await disableUser(user.id)
+      ElMessage.success('操作成功')
+      fetchUsers()
+    } catch (error) {
+      handleError('操作用户', error)
+    }
+  }
+
+  async function onClickToggleUserRole(user: UserInfo) {
+    try {
+      if (user.role === 'teacher') await updateUserInfo(user.id, { role: 'student' })
+      else await updateUserInfo(user.id, { role: 'teacher' })
       ElMessage.success('操作成功')
       fetchUsers()
     } catch (error) {
