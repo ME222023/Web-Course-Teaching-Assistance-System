@@ -32,6 +32,7 @@
             placeholder="请输入昵称"
             :maxlength="20"
             show-word-limit
+            @keydown.enter.prevent
           ></el-input>
         </el-form-item>
         <el-form-item label="个人签名" prop="bio">
@@ -86,6 +87,8 @@
   })
 
   watchEffect(() => {
+    // 保证 userInfoForm 与 userInfo 一致
+    // 赋值时要避免把 userInfo 的响应性带给 userInfoForm，这样修改 userInfoForm 就不会触发 userInfo 更新
     if (userInfo.value) userInfoForm.value = { ...userInfo.value }
   })
 
@@ -102,6 +105,8 @@
     if (!userInfo.value?.id) return
     loading.value = true
     try {
+      userInfoForm.value.nickname = userInfoForm.value.nickname?.trim()
+      userInfoForm.value.bio = userInfoForm.value.bio?.trim()
       await updateUserInfo(userInfo.value.id, userInfoForm.value)
       userStore.refetchUserInfo()
       ElMessage.success('更新成功')
