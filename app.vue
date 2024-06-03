@@ -1,10 +1,14 @@
 <template>
-  <NuxtLayout>
-    <NuxtPage />
-  </NuxtLayout>
+  <el-config-provider :locale="zhCn">
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
+  </el-config-provider>
 </template>
 
 <script setup lang="ts">
+  import { zhCn } from 'element-plus/es/locale/index.mjs'
+
   useColorMode().preference = 'light'
   useHead({
     titleTemplate(title) {
