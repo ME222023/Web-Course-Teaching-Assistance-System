@@ -7,7 +7,13 @@
       <div class="flex-grow"></div>
       <el-sub-menu v-if="loggedIn" index="1">
         <template #title>
-          <div @click="$router.push('/profile')">
+          <div class="flex items-center" @click="$router.push('/profile')">
+            <el-avatar
+              :src="userInfo?.avatar"
+              :icon="ElIconUser"
+              shape="circle"
+              class="mr-2 !w-8 !h-8"
+            />
             {{ userInfo?.nickname || userInfo?.username }}
           </div>
         </template>

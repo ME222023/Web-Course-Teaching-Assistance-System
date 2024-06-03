@@ -14,7 +14,7 @@
               :src="userInfoForm.avatar"
               @click="onClickSelectAvatar"
             ></el-avatar>
-            <span class="ml-4 text-gray">点击修改头像</span>
+            <span class="ml-4 text-gray" @click="onClickSelectAvatar">点击修改头像</span>
           </template>
           <template v-else>
             <el-avatar
@@ -23,7 +23,7 @@
               :icon="ElIconUser"
               @click="onClickSelectAvatar"
             ></el-avatar>
-            <span class="ml-4 text-gray">点击选择头像</span>
+            <span class="ml-4 text-gray" @click="onClickSelectAvatar">点击选择头像</span>
           </template>
         </el-form-item>
         <el-form-item label="昵称" prop="nickname">
