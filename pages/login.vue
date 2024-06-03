@@ -24,12 +24,19 @@
               @keydown.enter="onClickLogin"
             ></el-input>
           </el-form-item>
-          <el-button class="mt-2" type="primary" :disabled="loading" :loading @click="onClickLogin">
-            登录
-          </el-button>
-          <el-button class="mt-2" type="default" @click="$router.push('/register')">
-            注册
-          </el-button>
+
+          <div class="flex items-center mt-6">
+            <el-button type="primary" :disabled="loading" :loading @click="onClickLogin">
+              登录
+            </el-button>
+            <el-button type="default" @click="$router.push('/register')"> 注册 </el-button>
+
+            <div class="ml-auto">
+              <el-tooltip content="请联系老师重置密码" placement="top">
+                <el-link type="info" underline :icon="ElIconQuestionFilled">忘记密码？</el-link>
+              </el-tooltip>
+            </div>
+          </div>
         </el-form>
       </client-only>
     </div>
