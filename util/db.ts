@@ -30,8 +30,8 @@ export async function login(username: string, password: string) {
   const last5FailRecords = failRecords.slice(-5)
 
   if (last5FailRecords.length === 5) {
-    const lastFailTime = last5FailRecords[0].timestamp
-    if (now - lastFailTime < 5 * 60 * 1000) {
+    const firstFailTime = last5FailRecords[0].timestamp
+    if (now - firstFailTime < 5 * 60 * 1000) {
       throw new Error('失败次数过多，请稍后再试')
     } else {
       // 清空失败记录
