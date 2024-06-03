@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie'
-import type { User, UserInfo } from '~/types'
+import type { User, UserInfo, UserRole } from '~/types'
 import { encryptPassword, generateSalt, verifyPassword } from './crypto'
 import { parseToken, signToken } from './jwt'
 
@@ -12,7 +12,7 @@ function initDatabase() {
   if (db.isOpen()) return
   // https://dexie.org/docs/Version/Version.stores()#indexable-types
   db.version(1).stores({
-    users: '++id, username, nickname, isDeleted, role, [id+isDeleted]',
+    users: '++id, username, nickname, isDeleted, role, [id+isDeleted], isDisabled',
   })
 }
 
@@ -105,13 +105,14 @@ export interface ListUserOptions {
   pageSize?: number
   /** 用户名关键词 */
   keyword?: string
+  role?: UserRole
 }
 
 export async function listUser(
   options?: ListUserOptions,
 ): Promise<{ total: number; users: UserInfo[] }> {
   initDatabase()
-  let { page = 1, pageSize = 10, keyword } = options || {}
+  let { page = 1, pageSize = 10, keyword, role } = options || {}
   const offset = (page - 1) * pageSize
   if (keyword) keyword = keyword.trim().toLowerCase()
   const query = db.users.where({ isDeleted: 0 })
@@ -122,6 +123,9 @@ export async function listUser(
         !!user.nickname?.toLowerCase().includes(keyword),
     )
   }
+  if (role) {
+    query.and((u) => u.role === role)
+  }
   const total = await query.count()
   const users = await query.offset(offset).limit(pageSize).toArray()
 
@@ -130,21 +134,39 @@ export async function listUser(
 
 export async function disableUser(userId: number) {
   initDatabase()
-  const count = await db.users.where({ id: userId }).modify({ isDisabled: 1 })
+  const count = await db.users.where({ id: userId, isDeleted: 0 }).modify({ isDisabled: 1 })
 
   if (!count) throw new Error('用户不存在')
 }
 
 export async function enableUser(userId: number) {
   initDatabase()
-  const count = await db.users.where({ id: userId }).modify({ isDisabled: 0 })
+  const count = await db.users.where({ id: userId, isDeleted: 0 }).modify({ isDisabled: 0 })
 
   if (!count) throw new Error('用户不存在')
 }
 
 export async function deleteUser(userId: number) {
   initDatabase()
-  const count = await db.users.where({ id: userId }).modify({ isDeleted: 1 })
+  const count = await db.users.where({ id: userId, isDeleted: 0 }).modify({ isDeleted: 1 })
 
   if (!count) throw new Error('用户不存在')
+}
+
+/** 重置用户的密码为用户名。在实际中应限制只有教师可以调用 */
+export async function resetPassword(userId: number) {
+  initDatabase()
+  const user = await db.users.where({ id: userId }).first()
+
+  if (!user) throw new Error('用户不存在')
+
+  const salt = await generateSalt()
+  const newPassword = user.username
+  const encryptedPassword = await encryptPassword(newPassword, salt)
+
+  await db.users
+    .where({ id: userId })
+    .modify({ password: encryptedPassword, passwordSalt: salt, version: user.version + 1 })
+
+  return newPassword
 }

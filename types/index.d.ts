@@ -4,6 +4,8 @@ export type Timestamp = number
 export type IsDeletedFlag = number
 export type IsDisabledFlag = number
 
+export type UserRole = 'student' | 'teacher'
+
 export interface User {
   id: number
   /** 用户名。学生使用学号，教师使用工号。 */
@@ -13,7 +15,7 @@ export interface User {
   /** 加盐哈希后的密码。 */
   password: string
   /** 用户的身份，目前支持学生或老师 */
-  role: 'student' | 'teacher'
+  role: UserRole
   createdAt: Timestamp
   /** 用户的昵称 */
   nickname?: string
@@ -28,7 +30,10 @@ export interface User {
   version: number
 }
 
-export type UserInfo = Pick<User, 'id' | 'username' | 'role' | 'nickname' | 'avatar' | 'bio'>
+export type UserInfo = Pick<
+  User,
+  'id' | 'username' | 'role' | 'nickname' | 'avatar' | 'bio' | 'isDisabled'
+>
 
 export interface ExerciseMedia {
   type: 'image' | 'video'

@@ -71,7 +71,7 @@
   const userStore = useUserStore()
   const { userInfo } = storeToRefs(userStore)
 
-  const userInfoForm = ref<Omit<UserInfo, 'role' | 'id'>>({
+  const userInfoForm = ref<Omit<UserInfo, 'role' | 'id' | 'isDisabled'>>({
     username: '',
     avatar: '',
     bio: '',
