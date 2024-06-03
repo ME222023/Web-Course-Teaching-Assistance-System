@@ -25,12 +25,17 @@ export async function login(username: string, password: string) {
   if (!(await verifyPassword(user.passwordSalt, password, user.password))) {
     throw new Error('用户名或密码错误')
   }
+  if (user.isDisabled) throw new Error('用户已被禁用，请联系管理员')
 
   return signToken(user.id, user.version)
 }
 
 export async function register(username: string, password: string) {
   initDatabase()
+  const config = useConfigStore()
+
+  if (!config.siteConfig.registerEnabled) throw new Error('注册功能已关闭')
+
   const user = await db.users.where({ username, isDeleted: 0 }).first()
 
   if (user) throw new Error('用户名已存在')
@@ -44,6 +49,7 @@ export async function register(username: string, password: string) {
     password: encryptedPassword,
     passwordSalt: salt,
     isDeleted: 0,
+    isDisabled: 0,
     version: 0,
     // 第一个注册的用户自动成为老师
     role: currentUsers ? 'student' : 'teacher',
@@ -120,4 +126,25 @@ export async function listUser(
   const users = await query.offset(offset).limit(pageSize).toArray()
 
   return { total, users }
+}
+
+export async function disableUser(userId: number) {
+  initDatabase()
+  const count = await db.users.where({ id: userId }).modify({ isDisabled: 1 })
+
+  if (!count) throw new Error('用户不存在')
+}
+
+export async function enableUser(userId: number) {
+  initDatabase()
+  const count = await db.users.where({ id: userId }).modify({ isDisabled: 0 })
+
+  if (!count) throw new Error('用户不存在')
+}
+
+export async function deleteUser(userId: number) {
+  initDatabase()
+  const count = await db.users.where({ id: userId }).modify({ isDeleted: 1 })
+
+  if (!count) throw new Error('用户不存在')
 }

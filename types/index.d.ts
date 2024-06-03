@@ -2,6 +2,7 @@
 export type Timestamp = number
 /** Dexie 不支持使用 boolean 作为索引，所以这里使用 number。`1` 代表已删除，`0` 代表 */
 export type IsDeletedFlag = number
+export type IsDisabledFlag = number
 
 export interface User {
   id: number
@@ -22,6 +23,8 @@ export interface User {
   bio?: string
   /** 用户是否被删除。 */
   isDeleted: IsDeletedFlag
+  /** 用户是否被禁用。禁用后无法登录。 */
+  isDisabled: IsDisabledFlag
   version: number
 }
 
@@ -75,4 +78,10 @@ export interface Solution {
   imageUrls: string[]
   /** 提交状态，默认为 {@link SolutionStatus.Pending} */
   status: SolutionStatus
+}
+
+/** 站点设置 */
+export interface SiteConfig {
+  /** 是否启用注册，默认 `true` */
+  registerEnabled: boolean
 }
