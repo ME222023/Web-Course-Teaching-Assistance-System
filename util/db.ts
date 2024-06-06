@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie'
-import type { User, UserInfo, UserRole } from '~/types'
+import type { Exercise, User, UserInfo, UserRole } from '~/types'
 import { encryptPassword, generateSalt, verifyPassword } from './crypto'
 import { parseToken, signToken } from './jwt'
 import dayjs from './dayjs'
@@ -7,6 +7,7 @@ import dayjs from './dayjs'
 /** 初始化数据库实例，并用 TypeScript 类型设置好表的结构，方面开发 */
 const db = new Dexie('weboj-db') as Dexie & {
   users: EntityTable<User, 'id'>
+  exercises: EntityTable<Exercise, 'id'>
 }
 
 // 初始化数据库，在下方每个函数中都要调用
@@ -18,6 +19,7 @@ function initDatabase() {
    */
   db.version(1).stores({
     users: '++id, username, nickname, isDeleted, role, [id+isDeleted], isDisabled',
+    exercises: '++id, title, creatorId, createdAt, updatedAt, published, isDeleted',
   })
 }
 
@@ -196,4 +198,42 @@ export async function resetPassword(userId: number) {
     .modify({ password: encryptedPassword, passwordSalt: salt, version: user.version + 1 })
 
   return newPassword
+}
+
+/** 添加测试用的题目数据 */
+export async function addTestExerciseData() {
+  initDatabase()
+  const now = Date.now()
+  const exercises = [
+    {
+      title: 'Hello, World!',
+      content: '请输出 "Hello, World!"',
+      creatorId: 1,
+      createdAt: now,
+      updatedAt: now,
+      published: true,
+      isDeleted: 0,
+      media: [],
+    },
+    {
+      title: 'A + B Problem',
+      content: '输入两个整数 A 和 B，输出 A + B 的结果',
+      creatorId: 1,
+      createdAt: now,
+      updatedAt: now,
+      published: true,
+      isDeleted: 0,
+      media: [],
+    },
+  ]
+
+  for (const exercise of exercises) {
+    await db.exercises.add(exercise)
+  }
+}
+
+/** TODO: 查询题目列表，参数待定 */
+export async function listExercise() {
+  initDatabase()
+  return db.exercises.toArray()
 }

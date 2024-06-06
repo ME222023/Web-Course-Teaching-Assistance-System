@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <client-only>
     <el-menu mode="horizontal" :ellipsis="false">
       <el-menu-item @click="$router.push('/')">
         <h2> SZU Web OJ </h2>
@@ -24,7 +24,7 @@
       <el-menu-item v-else @click="$router.push('/login')">登录</el-menu-item>
     </el-menu>
     <slot></slot>
-  </div>
+  </client-only>
 </template>
 
 <script setup lang="ts">
