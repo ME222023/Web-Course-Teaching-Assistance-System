@@ -231,6 +231,11 @@ export async function addTestExerciseData() {
     await db.exercises.add(exercise)
   }
 }
+//查询id为number的题目
+export async function getExerciseById(exerciseId: number) {
+  initDatabase()
+  return db.exercises.where({ id: exerciseId }).first()
+}
 
 /** TODO: 查询题目列表，参数待定 */
 export async function listExercise() {
