@@ -4,7 +4,7 @@
     <el-button @click="onClickAddTestData">插入测试题目</el-button>
 
     <div class="flex flex-col mt-4 gap-y-2">
-      <el-button v-for="exercise, key in exercises" :key link @click="onClickExercise(exercise)">
+      <el-button v-for="(exercise, key) in exercises" :key link @click="onClickExercise(exercise)">
         {{ exercise }}
       </el-button>
     </div>
