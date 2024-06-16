@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-row>
-      <el-col :span="4" >
+      <el-col :span="4">
         <el-button
           v-for="exercise in allexercises"
           :key="exercise.id"
@@ -42,9 +42,7 @@
             list-type="picture"
           >
             <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-            <div class="el-upload__text">
-              Drop file here or <em>click to upload</em>
-            </div>
+            <div class="el-upload__text"> Drop file here or <em>click to upload</em> </div>
           </el-upload>
           <el-button type="primary" @click="submit">提交</el-button>
         </el-text>
