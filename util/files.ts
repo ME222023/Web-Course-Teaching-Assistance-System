@@ -1,3 +1,5 @@
+import type { UploadFiles } from "element-plus"
+
 interface SelectImageOptions {
   /** 限制图片大小，单位 MB */
   maxSize?: number
@@ -28,4 +30,23 @@ export async function selectImage(options?: SelectImageOptions) {
     })
     open()
   })
+}
+
+export async function handleFileChange(uploadFiles: UploadFiles): Promise<string[]> {
+  return new Promise((resolve, reject) => {
+    const files = Array.from(uploadFiles);
+    const promises = files.map(file => new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        resolve(reader.result as string);
+      };
+      reader.onerror = (error) => {
+        reject(error);
+      };
+      reader.readAsDataURL(file.raw!);
+    }));
+    Promise.all(promises)
+      .then(resolve)
+      .catch(reject);
+  });
 }
