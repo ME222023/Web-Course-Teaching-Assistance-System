@@ -78,7 +78,7 @@
     language: 'text',
     createdAt: Date.now(),
     imageUrls: [],
-    status: SolutionStatus.Pending
+    status: SolutionStatus.Pending,
   })
 
   onMounted(async () => {
@@ -86,6 +86,7 @@
     watch(
       () => route.query.id,
       async (exerciseId) => {
+        if (!exerciseId) return
         if (exerciseId) {
           exercise.value = await getExerciseById(Number(exerciseId))
           if (!exercise.value) {
@@ -101,13 +102,13 @@
 
   const onFileChange = async (uploadFile: UploadFile, uploadFiles: UploadFiles) => {
     try {
-      const base64Strings = await handleFileChange(uploadFiles);
-      base64Strings.forEach(base64 => {
-        console.log(base64);
-      });
-      base64 = base64Strings;
+      const base64Strings = await handleFileChange(uploadFiles)
+      base64Strings.forEach((base64) => {
+        console.log(base64)
+      })
+      base64 = base64Strings
     } catch (error) {
-      ElMessage.error('文件处理出错: ' + error);
+      ElMessage.error('文件处理出错: ' + error)
     }
   }
 
@@ -130,7 +131,7 @@
     solution.value.exerciseId = Number(exerciseId)
     solution.value.content = input.value
     solution.value.imageUrls = base64
-    
+
     console.log('提交的Solution对象:', solution.value)
     // 在这里添加其他提交逻辑，例如发送到后端API
   }
