@@ -36,10 +36,11 @@
             drag
             action="#"
             multiple
-            :on-change="onFileChange"
             :on-preview="handlePreview"
             :on-remove="handleRemove"
             list-type="picture"
+            :on-error="handleError"
+            :on-success="onFileChange"
           >
             <el-icon class="el-icon--upload"><upload-filled /></el-icon>
             <div class="el-upload__text"> Drop file here or <em>click to upload</em> </div>
@@ -56,12 +57,13 @@
   import { ref, onMounted } from 'vue'
   import { useRoute } from 'vue-router'
   import { ElMessage, type UploadFile, type UploadFiles, type UploadProps } from 'element-plus'
-  import { getExerciseById, listExercise } from '~/util/db'
+  import { getExerciseById, listExercise, addSolution } from '~/util/db'
   import type { Exercise, Solution } from '~/types'
   import { SolutionStatus } from '~/types'
   import { UploadFilled } from '@element-plus/icons-vue'
   import { handleFileChange } from '~/util/files'
 
+  const userStore = useUserStore()
   const route = useRoute()
   const router = useRouter()
   const exerciseId = route.query.id
@@ -100,7 +102,7 @@
     )
   })
 
-  const onFileChange = async (uploadFile: UploadFile, uploadFiles: UploadFiles) => {
+  const onFileChange = async (_: any, uploadFile: UploadFile, uploadFiles: UploadFiles) => {
     try {
       const base64Strings = await handleFileChange(uploadFiles)
       base64Strings.forEach((base64) => {
@@ -128,12 +130,31 @@
   }
 
   function submit() {
+    if(!userStore.userInfo) {
+      ElMessage.error('请先登录')
+      return
+    }
     solution.value.exerciseId = Number(exerciseId)
     solution.value.content = input.value
     solution.value.imageUrls = base64
+    solution.value.creatorId = userStore.userInfo.id
+    try {
+      const solutionClone = JSON.parse(JSON.stringify(solution.value));
 
-    console.log('提交的Solution对象:', solution.value)
+      console.log('提交的 Solution 对象:', solutionClone);
+
+      addSolution(solutionClone);
+      ElMessage.success('Solution submitted successfully');
+    } catch (error) {
+      console.error('克隆 Solution 对象失败:', error);
+      ElMessage.error('Failed to submit solution: ' + error);
+    }
+    // addSolution(solution.value)
+    // console.log('提交的Solution对象:', solution.value)
     // 在这里添加其他提交逻辑，例如发送到后端API
+  }
+  function handleError(){
+    ElMessage.error('图片异常，请更换图片')
   }
 </script>
 

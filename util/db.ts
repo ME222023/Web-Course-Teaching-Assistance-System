@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie'
-import type { Exercise, User, UserInfo, UserRole } from '~/types'
+import type { Exercise, User, UserInfo, UserRole, Solution } from '~/types'
 import { encryptPassword, generateSalt, verifyPassword } from './crypto'
 import { parseToken, signToken } from './jwt'
 import dayjs from './dayjs'
@@ -8,6 +8,7 @@ import dayjs from './dayjs'
 const db = new Dexie('weboj-db') as Dexie & {
   users: EntityTable<User, 'id'>
   exercises: EntityTable<Exercise, 'id'>
+  solutions: EntityTable<Solution, 'id'>
 }
 
 // 初始化数据库，在下方每个函数中都要调用
@@ -20,6 +21,7 @@ function initDatabase() {
   db.version(1).stores({
     users: '++id, username, nickname, isDeleted, role, [id+isDeleted], isDisabled',
     exercises: '++id, title, creatorId, createdAt, updatedAt, published, isDeleted',
+    solutions: '++id, exerciseId, creatorId, content, language, createdAt, imageUrls, status',
   })
 }
 
@@ -231,6 +233,20 @@ export async function addTestExerciseData() {
     await db.exercises.add(exercise)
   }
 }
+export async function addSolution(solution: Solution) {
+  initDatabase()
+  const Solution = {
+    exerciseId: solution.exerciseId,
+    creatorId: solution.creatorId,
+    content: solution.content,
+    language: solution.language,
+    createdAt: Date.now(),
+    imageUrls: solution.imageUrls,
+    status: solution.status
+  }
+  // console.log(Solution)
+  await db.solutions.add(Solution)
+}
 //查询id为number的题目
 export async function getExerciseById(exerciseId: number) {
   initDatabase()
@@ -241,4 +257,9 @@ export async function getExerciseById(exerciseId: number) {
 export async function listExercise() {
   initDatabase()
   return db.exercises.toArray()
+}
+
+export async function listSolution() {
+  initDatabase()
+  return db.solutions.toArray()
 }
