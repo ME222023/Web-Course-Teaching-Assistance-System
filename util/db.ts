@@ -242,7 +242,7 @@ export async function addSolution(solution: Solution) {
     language: solution.language,
     createdAt: Date.now(),
     imageUrls: solution.imageUrls,
-    status: solution.status
+    status: solution.status,
   }
   // console.log(Solution)
   await db.solutions.add(Solution)
@@ -259,7 +259,11 @@ export async function listExercise() {
   return db.exercises.toArray()
 }
 
-export async function listSolution() {
+export async function listSolution(userId?: number) {
   initDatabase()
-  return db.solutions.toArray()
+  const query = db.solutions
+
+  userId && query.where({ creatorId: userId })
+
+  return query.toArray()
 }
