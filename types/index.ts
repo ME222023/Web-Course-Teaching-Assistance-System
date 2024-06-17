@@ -54,7 +54,7 @@ export interface Exercise {
   updatedAt: Timestamp
   media: ExerciseMedia[]
   /** 题目是否已被发布。学生默认只能看到已发布的内容。 */
-  published: boolean
+  isPublished: boolean
   isDeleted: IsDeletedFlag
 }
 

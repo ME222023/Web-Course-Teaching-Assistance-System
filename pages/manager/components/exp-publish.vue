@@ -33,6 +33,7 @@
                 action="#"
                 list-type="picture"
                 multiple
+                accept="audio/mp3,audio/wav"
                 v-model:file-list="audioFileList"
                 :on-success="handleAudioUpload"
                 :on-remove="handleRemove('audios')"
@@ -49,6 +50,7 @@
                 action="#"
                 list-type="picture"
                 multiple
+                accept="video/*"
                 v-model:file-list="videoFileList"
                 :on-success="handleVideoUpload"
                 :on-remove="handleRemove('videos')"
@@ -56,6 +58,9 @@
               >
                 <el-button type="primary">点击或拖至此处上传</el-button>
               </el-upload>
+              <div v-if="videoFileList.length">
+                <video class="w-64 h-36" v-for="video, key in videoFileList" :key :src="video.url" controls></video>
+              </div>
               <div v-if="uploadInfo.videos.success + uploadInfo.videos.fail > 0">
                 上传成功: {{ uploadInfo.videos.success }} 个视频，上传失败: {{ uploadInfo.videos.fail }} 个视频
               </div>

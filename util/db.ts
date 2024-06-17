@@ -20,7 +20,7 @@ function initDatabase() {
    */
   db.version(1).stores({
     users: '++id, username, nickname, isDeleted, role, [id+isDeleted], isDisabled',
-    exercises: '++id, title, creatorId, createdAt, updatedAt, published, isDeleted',
+    exercises: '++id, title, creatorId, createdAt, updatedAt, isPublished, isDeleted',
     solutions: '++id, exerciseId, creatorId, content, language, createdAt, imageUrls, status',
   })
 }
@@ -213,7 +213,7 @@ export async function addTestExerciseData() {
       creatorId: 1,
       createdAt: now,
       updatedAt: now,
-      published: true,
+      isPublished: true,
       isDeleted: 0,
       media: [],
     },
@@ -223,7 +223,7 @@ export async function addTestExerciseData() {
       creatorId: 1,
       createdAt: now,
       updatedAt: now,
-      published: true,
+      isPublished: true,
       isDeleted: 0,
       media: [],
     },
