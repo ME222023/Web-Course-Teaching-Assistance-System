@@ -144,10 +144,10 @@
       console.log('提交的 Solution 对象:', solutionClone);
 
       addSolution(solutionClone);
-      ElMessage.success('Solution submitted successfully');
+      ElMessage.success('提交成功');
     } catch (error) {
       console.error('克隆 Solution 对象失败:', error);
-      ElMessage.error('Failed to submit solution: ' + error);
+      ElMessage.error('提交失败: ' + error);
     }
     // addSolution(solution.value)
     // console.log('提交的Solution对象:', solution.value)

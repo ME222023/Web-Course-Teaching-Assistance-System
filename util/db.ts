@@ -253,6 +253,11 @@ export async function getExerciseById(exerciseId: number) {
   return db.exercises.where({ id: exerciseId }).first()
 }
 
+export async function getSolutionById(exerciseId: number, userId: number) {
+  initDatabase()
+  return db.solutions.where({ exerciseId, creatorId: userId }).first()
+}
+
 /** TODO: 查询题目列表，参数待定 */
 export async function listExercise() {
   initDatabase()
