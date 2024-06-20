@@ -91,6 +91,7 @@
         if (!exerciseId) return
         if (exerciseId) {
           exercise.value = await getExerciseById(Number(exerciseId))
+          console.log(exerciseId)
           if (!exercise.value) {
             ElMessage.error('Exercise not found')
           }
@@ -134,7 +135,7 @@
       ElMessage.error('请先登录')
       return
     }
-    solution.value.exerciseId = Number(exerciseId)
+    solution.value.exerciseId = Number(route.query.id)
     solution.value.content = input.value
     solution.value.imageUrls = base64
     solution.value.creatorId = userStore.userInfo.id

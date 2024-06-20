@@ -253,9 +253,9 @@ export async function getExerciseById(exerciseId: number) {
   return db.exercises.where({ id: exerciseId }).first()
 }
 
-export async function getSolutionById(exerciseId: number, userId: number) {
+export async function getSolutionById(solutionId: number) {
   initDatabase()
-  return db.solutions.where({ exerciseId, creatorId: userId }).first()
+  return db.solutions.where({ id: solutionId }).first()
 }
 
 /** TODO: 查询题目列表，参数待定 */
@@ -266,9 +266,12 @@ export async function listExercise() {
 
 export async function listSolution(userId?: number) {
   initDatabase()
-  const query = db.solutions
+  let query = db.solutions
 
-  userId && query.where({ creatorId: userId })
+  if(userId){
+    return query.where({ creatorId: userId }).toArray()
+  }
+  console.log(query.toArray())
 
   return query.toArray()
 }

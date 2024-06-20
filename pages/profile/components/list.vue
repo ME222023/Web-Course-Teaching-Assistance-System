@@ -1,9 +1,9 @@
 <template>
-  <div class="flex flex-col ml-6 mt-2 min-w-120 w-full max-w-240">
+  <div class="flex flex-col ml-6 mt-2 min-w-120 w-full max-w-400">
     <el-table :data="combinedData" style="width: 100%">
       <el-table-column prop="id" label="题目ID" width="100" />
-      <el-table-column prop="title" label="题目标题" width="150" />
-      <el-table-column label="提交时间" width="150">
+      <el-table-column prop="title" label="题目标题" width="180" />
+      <el-table-column label="提交时间" width="170">
         <template #default="scope">
           <div v-if="scope.row.latestSolution">
             {{  dayjs(scope.row.latestSolution.createdAt).format('L LT') }}
@@ -59,7 +59,7 @@
 <script lang="ts" setup>
   import dayjs from 'dayjs';
   import type { Exercise, Solution } from '~/types'
-  import { listExercise, listSolution } from '~/util/db'
+  import { getSolutionById, listExercise, listSolution } from '~/util/db'
 
   const drawer = ref(false)
   const exercise = ref<Exercise>()
@@ -74,13 +74,18 @@
 
   onMounted(() => {
     watchEffect(async () => {
+      //初始化数据
+      combinedData.value = []
+      // console.log(combinedData.value)
       if (!userStore.userInfo?.id) return
       const exercises = await listExercise()
       const solutions = await listSolution(userStore.userInfo.id)
+      console.log(solutions)
       combinedData.value = exercises.map((exercise) => {
         const solution = solutions
           .filter((solution) => solution.exerciseId === exercise.id)
           .sort((a, b) => b.createdAt - a.createdAt)
+          // console.log(solution)
         return {
           ...exercise,
           latestSolution: solution[0],
@@ -91,10 +96,11 @@
     })
   })
 
-  const opendrawer = (data: ExerciseWithSolution) => {
+  const opendrawer = async (data: ExerciseWithSolution) => {
     drawer.value = true
     exercise.value = data
     solution.value = data.latestSolution
+    // solution.value = await getSolutionById(Number(data.latestSolution?.id))
   }
 
   function toExercise(id: number) {
