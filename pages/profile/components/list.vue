@@ -6,14 +6,20 @@
       <el-table-column label="提交时间" width="170">
         <template #default="scope">
           <div v-if="scope.row.latestSolution">
-            {{  dayjs(scope.row.latestSolution.createdAt).format('L LT') }}
+            {{ dayjs(scope.row.latestSolution.createdAt).format('L LT') }}
           </div>
         </template>
       </el-table-column>
       <el-table-column prop="latestSolution.status" label="题目状态" width="120" />
       <el-table-column fixed="right" label="操作" width="120">
         <template #default="scope">
-          <el-button v-if="scope.row.latestSolution?.status" link type="primary" size="small" @click="opendrawer(scope.row)">
+          <el-button
+            v-if="scope.row.latestSolution?.status"
+            link
+            type="primary"
+            size="small"
+            @click="opendrawer(scope.row)"
+          >
             查看详情
           </el-button>
           <el-button v-else link type="primary" size="small" @click="toExercise(scope.row.id)">
@@ -22,7 +28,7 @@
         </template>
       </el-table-column>
     </el-table>
-    <el-drawer v-model="drawer" :with-header="false">
+    <el-drawer class="min-w-120 !w-50vw max-w-200" v-model="drawer" :with-header="false">
       <h2>题目:</h2>
       <el-row>
         <el-col :span="20" v-if="exercise">
@@ -37,7 +43,12 @@
       </el-text>
       <h2>你的答案:</h2>
       <el-text v-if="solution" margin-top="20px">
-        <p style="font-size: 15px">{{ solution.content }}</p>
+        <monaco-editor
+          class="w-full h-100"
+          :model-value="solution.content"
+          :lang="solution.language"
+          :options="{ theme: 'vs-dark', readOnly: true }"
+        ></monaco-editor>
         <div v-if="solution.imageUrls">
           <img
             v-for="(url, index) in solution.imageUrls"
@@ -57,7 +68,7 @@
 </template>
 
 <script lang="ts" setup>
-  import dayjs from 'dayjs';
+  import dayjs from 'dayjs'
   import type { Exercise, Solution } from '~/types'
   import { getSolutionById, listExercise, listSolution } from '~/util/db'
 
@@ -85,7 +96,7 @@
         const solution = solutions
           .filter((solution) => solution.exerciseId === exercise.id)
           .sort((a, b) => b.createdAt - a.createdAt)
-          // console.log(solution)
+        // console.log(solution)
         return {
           ...exercise,
           latestSolution: solution[0],

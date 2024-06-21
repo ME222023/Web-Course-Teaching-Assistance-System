@@ -23,13 +23,32 @@
 
         <el-text v-if="exercise" class="w-full" margin-top="20px">
           <p class="whitespace-break-spaces">{{ exercise.content }}</p>
-          <el-input
-            v-model="input"
-            type="textarea"
-            :autosize="{ minRows: 15, maxRows: 50 }"
-            style="width: 100%"
-            placeholder="在此输入答案..."
-          />
+          <el-card shadow="never">
+            <el-form class="!flex !items-center" label-position="left">
+              <el-form-item label="编辑器主题">
+                <el-select-v2
+                  class="!w-50"
+                  v-model="editorTheme"
+                  :options="EL_SELECT_MONACO_THEMES"
+                ></el-select-v2>
+              </el-form-item>
+              <el-form-item class="ml-4" label="语言">
+                <el-select-v2
+                  class="!w-40"
+                  v-model="solution.language"
+                  :options="EL_SELECT_MONACO_LANGUAGES"
+                  filterable
+                ></el-select-v2>
+              </el-form-item>
+            </el-form>
+            <monaco-editor
+              ref="monacoEditorRef"
+              class="w-full h-100"
+              v-model="solution.content"
+              :lang="solution.language"
+              :options="{ theme: editorTheme }"
+            ></monaco-editor>
+          </el-card>
           <span>上传图片回答</span>
           <el-upload
             class="uploadpng"
@@ -69,13 +88,15 @@
   import { UploadFilled } from '@element-plus/icons-vue'
   import { handleFileChange } from '~/util/files'
   import ExercisePlaceholderWebP from '~/assets/icons/exercise-placeholder.webp'
+  import type MonacoEditor from 'nuxt-monaco-editor/dist/runtime/MonacoEditor.client.vue'
+  import { MonacoPlaceholderContentWidget } from '~/util/monaco-editor'
+  import { EL_SELECT_MONACO_LANGUAGES, EL_SELECT_MONACO_THEMES } from '~/constants'
 
   const userStore = useUserStore()
   const route = useRoute()
   const router = useRouter()
   const exercise = ref<Exercise>()
   const allexercises = ref<Exercise[]>([])
-  const input = ref('')
   let base64: string[] = []
 
   const solution = ref<Solution>({
@@ -83,11 +104,13 @@
     exerciseId: 0,
     creatorId: 0,
     content: '',
-    language: 'text',
+    language: 'plaintext',
     createdAt: Date.now(),
     imageUrls: [],
     status: SolutionStatus.Pending,
   })
+  const monacoEditorRef = ref<InstanceType<typeof MonacoEditor>>()
+  const editorTheme = ref('vs-dark')
 
   onMounted(async () => {
     allexercises.value = await listExercise()
@@ -95,17 +118,18 @@
       () => route.query.id,
       async (exerciseId) => {
         if (!exerciseId) return
-        if (exerciseId) {
-          exercise.value = await getExerciseById(Number(exerciseId))
-          if (!exercise.value) {
-            ElMessage.error('Exercise not found')
-          }
-        } else {
-          ElMessage.error('Invalid exercise ID')
+        exercise.value = await getExerciseById(Number(exerciseId))
+        if (!exercise.value) {
+          ElMessage.error('Exercise not found')
         }
       },
       { immediate: true },
     )
+    const stopWatchEditor = watchEffect(() => {
+      if (!monacoEditorRef.value?.$editor) return
+      new MonacoPlaceholderContentWidget('在此输入答案', monacoEditorRef.value.$editor)
+      stopWatchEditor()
+    })
   })
 
   const onFileChange = async (_: any, uploadFile: UploadFile, uploadFiles: UploadFiles) => {
@@ -141,7 +165,6 @@
       return
     }
     solution.value.exerciseId = Number(route.query.id)
-    solution.value.content = input.value
     solution.value.imageUrls = base64
     solution.value.creatorId = userStore.userInfo.id
     if (!solution.value.content || !solution.value.imageUrls) {

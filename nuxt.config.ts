@@ -30,7 +30,12 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     '@element-plus/nuxt',
     '@nuxtjs/color-mode',
+    'nuxt-monaco-editor',
   ],
+
+  monacoEditor: {
+    locale: 'zh-hans',
+  },
 
   // vueuse
   vueuse: {
