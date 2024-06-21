@@ -1,8 +1,17 @@
 <template>
   <client-only>
-    <el-menu mode="horizontal" :ellipsis="false">
-      <el-menu-item @click="$router.push('/')">
+    <el-menu
+      mode="horizontal"
+      :ellipsis="false"
+      router
+      :default-active="router.currentRoute.value.path"
+    >
+      <el-menu-item index="/">
         <h2> SZU Web OJ </h2>
+      </el-menu-item>
+      <el-menu-item index="/exercise">
+        <el-icon><el-icon-finished></el-icon-finished></el-icon>
+        题目列表
       </el-menu-item>
       <div class="flex-grow"></div>
       <el-sub-menu v-if="loggedIn" index="1">

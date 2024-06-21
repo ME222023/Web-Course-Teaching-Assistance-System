@@ -1,53 +1,60 @@
 <template>
   <div>
     <el-row>
-      <el-col :span="4">
-        <el-button
-          v-for="exercise in allexercises"
-          :key="exercise.id"
-          text
-          @click="changeExercise(exercise.id)"
-          class="!ml-0"
-        >
-          {{ exercise.id }}: {{ exercise.title }}
-        </el-button>
-      </el-col>
-      <el-col :span="20">
-        <el-row>
-          <el-col :span="20" v-if="exercise">
-            <h2>{{ exercise.title }}</h2>
-          </el-col>
-          <el-col :span="4">
-            <p style="text-align: center">ID: {{ exerciseId }}</p>
-          </el-col>
-        </el-row>
-        <el-text v-if="exercise" margin-top="20px">
-          <p>{{ exercise.content }}</p>
-          <el-input
-            v-model="input"
-            type="textarea"
-            :autosize="{ minRows: 15, maxRows: 50 }"
-            style="width: 100%"
-            placeholder="在此输入答案..."
-          />
-          <span>上传图片回答</span>
-          <el-upload
-            class="uploadpng"
-            drag
-            action="#"
-            multiple
-            :on-preview="handlePreview"
-            :on-remove="handleRemove"
-            list-type="picture"
-            :on-error="handleError"
-            :on-success="onFileChange"
+      <el-col :span="5">
+        <div class="flex flex-col">
+          <el-button
+            v-for="exercise in allexercises"
+            class="!justify-start !ml-0"
+            :key="exercise.id"
+            text
+            @click="changeExercise(exercise.id)"
           >
-            <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-            <div class="el-upload__text"> Drop file here or <em>click to upload</em> </div>
-          </el-upload>
-          <el-button type="primary" @click="submit">提交</el-button>
-        </el-text>
-        <p v-else>Loading...</p>
+            {{ exercise.id }}. {{ exercise.title }}
+          </el-button>
+        </div>
+      </el-col>
+      <el-col :span="18" :offset="1">
+        <div v-if="exercise" class="flex flex-col">
+          <div class="flex items-center">
+            <h2>{{ exercise.title }}</h2>
+            <span class="ml-auto">ID: {{ exercise.id }}</span>
+          </div>
+
+          <el-text v-if="exercise" class="w-full" margin-top="20px">
+            <p>{{ exercise.content }}</p>
+            <el-input
+              v-model="input"
+              type="textarea"
+              :autosize="{ minRows: 15, maxRows: 50 }"
+              style="width: 100%"
+              placeholder="在此输入答案..."
+            />
+            <span>上传图片回答</span>
+            <el-upload
+              class="uploadpng"
+              drag
+              action="#"
+              multiple
+              :on-preview="handlePreview"
+              :on-remove="handleRemove"
+              list-type="picture"
+              :on-error="handleError"
+              :on-success="onFileChange"
+            >
+              <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+              <div class="el-upload__text"> Drop file here or <em>click to upload</em> </div>
+            </el-upload>
+            <el-button type="primary" @click="submit">提交</el-button>
+          </el-text>
+        </div>
+
+        <el-empty
+          v-else
+          class="mt-10"
+          :image="ExercisePlaceholderWebP"
+          description="选择一个题目，开始做题吧"
+        ></el-empty>
       </el-col>
     </el-row>
   </div>
@@ -62,11 +69,11 @@
   import { SolutionStatus } from '~/types'
   import { UploadFilled } from '@element-plus/icons-vue'
   import { handleFileChange } from '~/util/files'
+  import ExercisePlaceholderWebP from '~/assets/icons/exercise-placeholder.webp'
 
   const userStore = useUserStore()
   const route = useRoute()
   const router = useRouter()
-  const exerciseId = route.query.id
   const exercise = ref<Exercise>()
   const allexercises = ref<Exercise[]>([])
   const input = ref('')
@@ -91,7 +98,6 @@
         if (!exerciseId) return
         if (exerciseId) {
           exercise.value = await getExerciseById(Number(exerciseId))
-          console.log(exerciseId)
           if (!exercise.value) {
             ElMessage.error('Exercise not found')
           }
@@ -131,7 +137,7 @@
   }
 
   function submit() {
-    if(!userStore.userInfo) {
+    if (!userStore.userInfo) {
       ElMessage.error('请先登录')
       return
     }
@@ -144,21 +150,21 @@
       return
     }
     try {
-      const solutionClone = JSON.parse(JSON.stringify(solution.value));
+      const solutionClone = JSON.parse(JSON.stringify(solution.value))
 
-      console.log('提交的 Solution 对象:', solutionClone);
+      console.log('提交的 Solution 对象:', solutionClone)
 
-      addSolution(solutionClone);
-      ElMessage.success('提交成功');
+      addSolution(solutionClone)
+      ElMessage.success('提交成功')
     } catch (error) {
-      console.error('克隆 Solution 对象失败:', error);
-      ElMessage.error('提交失败: ' + error);
+      console.error('克隆 Solution 对象失败:', error)
+      ElMessage.error('提交失败: ' + error)
     }
     router.replace('/profile')
     // addSolution(solution.value)
     // console.log('提交的Solution对象:', solution.value)
   }
-  function handleError(){
+  function handleError() {
     ElMessage.error('图片异常，请更换图片')
   }
 </script>

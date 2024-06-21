@@ -2,19 +2,35 @@
   <div class="flex flex-col">
     <el-row class="mx-10 mt-12">
       <el-col :span="15">
-        <el-button @click="onClickAddTestData">插入测试题目</el-button>
-
-        <div class="flex flex-col mt-4 gap-y-2">
-          <el-button
-            v-for="(exercise, key) in exercises"
-            class="!overflow-hidden"
-            :key
-            link
-            @click="onClickExercise(exercise)"
-          >
-            {{ exercise }}
-          </el-button>
-        </div>
+        <el-card header="最新题目" shadow="never">
+          <template #header>
+            <div class="flex items-center">
+              <div>最新题目</div>
+              <el-button class="ml-auto" :icon="ElIconRight" size="small" @click="onClickExercise()">
+                查看更多
+              </el-button>
+            </div>
+          </template>
+          <el-empty v-if="!exercises.length"></el-empty>
+          <el-scrollbar v-else max-height="250px">
+            <div
+              v-for="(exercise, key) in exercises"
+              class="rounded-2 hover:bg-gray-100 p-2 cursor-pointer transition-colors duration-200 ease-in-out"
+              :key="key"
+              shadow="never"
+              @click="onClickExercise(exercise)"
+            >
+              <div class="flex items-center">
+                <div class="line-clamp-1 mr-2">{{ exercise.title }}</div>
+                <el-tooltip :content="dayjs(exercise.createdAt).format('L LT')" placement="top">
+                  <div class="text-sm text-gray-500 ml-auto shrink-0">
+                    {{ dayjs(exercise.createdAt).fromNow() }}
+                  </div>
+                </el-tooltip>
+              </div>
+            </div>
+          </el-scrollbar>
+        </el-card>
       </el-col>
       <el-col :span="8" :offset="1">
         <el-card header="站点公告" shadow="never">
@@ -42,13 +58,17 @@
       </el-col>
     </el-row>
 
+    <el-footer class="flex items-center justify-center">
+      <el-text>© 2024 SZU Web OJ</el-text>
+    </el-footer>
+
     <announcement-info-dialog ref="announcementInfoDialogRef" />
   </div>
 </template>
 
 <script setup lang="ts">
   import type { Announcement, Exercise } from '~/types'
-  import { addTestExerciseData, listAnnouncement, listExercise } from '~/util/db'
+  import { listAnnouncement, listExercise } from '~/util/db'
   import { handleError } from '~/util/error_parser'
   import dayjs from '~/util/dayjs'
   import AnnouncementInfoDialog from '~/components/announcement-info-dialog.vue'
@@ -59,16 +79,10 @@
   const announcements = ref<Announcement[]>([])
   const announcementInfoDialogRef = ref<InstanceType<typeof AnnouncementInfoDialog>>()
 
-  function onClickAddTestData() {
-    addTestExerciseData()
-    ElMessage.success('插入测试数据成功')
-    fetchExercises()
-  }
-
-  function onClickExercise(exercise: Exercise) {
+  function onClickExercise(exercise?: Exercise) {
     router.push({
       path: '/exercise',
-      query: { id: exercise.id },
+      query: { id: exercise?.id },
     })
   }
 
