@@ -95,3 +95,13 @@ export interface LoginFailRecord {
   username: string
   timestamp: Timestamp
 }
+
+/** 站点公告 */
+export interface Announcement {
+  id: number
+  creatorId: number
+  createdAt: Timestamp
+  title: string
+  content: string
+  isDeleted: IsDeletedFlag
+}

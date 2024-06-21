@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie'
-import type { Exercise, User, UserInfo, UserRole, Solution } from '~/types'
+import type { Exercise, User, UserInfo, UserRole, Solution, Announcement } from '~/types'
 import { encryptPassword, generateSalt, verifyPassword } from './crypto'
 import { parseToken, signToken } from './jwt'
 import dayjs from './dayjs'
@@ -9,6 +9,7 @@ const db = new Dexie('weboj-db') as Dexie & {
   users: EntityTable<User, 'id'>
   exercises: EntityTable<Exercise, 'id'>
   solutions: EntityTable<Solution, 'id'>
+  announcements: EntityTable<Announcement, 'id'>
 }
 
 // 初始化数据库，在下方每个函数中都要调用
@@ -22,6 +23,7 @@ function initDatabase() {
     users: '++id, username, nickname, isDeleted, role, [id+isDeleted], isDisabled',
     exercises: '++id, title, creatorId, createdAt, updatedAt, isPublished, isDeleted',
     solutions: '++id, exerciseId, creatorId, content, language, createdAt, imageUrls, status',
+    announcements: '++id, creatorId, createdAt, isDeleted, title',
   })
 }
 
@@ -268,10 +270,33 @@ export async function listSolution(userId?: number) {
   initDatabase()
   let query = db.solutions
 
-  if(userId){
+  if (userId) {
     return query.where({ creatorId: userId }).toArray()
   }
-  console.log(query.toArray())
 
   return query.toArray()
+}
+
+export async function addAnnouncement(data: Omit<Announcement, 'id' | 'createdAt' | 'isDeleted'>) {
+  initDatabase()
+  await db.announcements.add({ ...data, createdAt: Date.now(), isDeleted: 0 })
+}
+
+export async function listAnnouncement(filter?: { keyword?: string }) {
+  const query = db.announcements.where({ isDeleted: 0 })
+
+  if (filter?.keyword) {
+    query.and((a) => a.title.includes(filter.keyword!))
+  }
+
+  return query.toArray()
+}
+
+export async function editAnnouncement(data: Partial<Omit<Announcement, 'id'>> & { id: number }) {
+  return db.announcements.update(data.id, data)
+}
+
+export async function deleteAnnouncement(id: number) {
+  const flag = await db.announcements.where({ id, isDeleted: 0 }).modify({ isDeleted: 1 })
+  if (!flag) throw new Error('此公告不存在')
 }
