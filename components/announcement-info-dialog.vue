@@ -12,7 +12,7 @@
       <div class="text-gray-500">
         {{ dayjs(announcement.createdAt).format('L LT') }}
       </div>
-      <div class="text-gray-500 whitespace-pre">{{ announcement.content }}</div>
+      <div class="text-gray-500 whitespace-break-spaces">{{ announcement.content }}</div>
     </div>
   </el-dialog>
 </template>

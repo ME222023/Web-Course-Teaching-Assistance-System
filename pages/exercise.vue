@@ -1,62 +1,61 @@
 <template>
-  <div>
-    <el-row>
-      <el-col :span="5">
-        <div class="flex flex-col">
-          <el-button
-            v-for="exercise in allexercises"
-            class="!justify-start !ml-0"
-            :key="exercise.id"
-            text
-            @click="changeExercise(exercise.id)"
+  <div class="flex" style="height: calc(100vh - 80px)">
+    <!-- TODO: 让这个 el-col 单独可以滚动，不要影响其他地方 -->
+    <el-col class="!overflow-auto" :span="5">
+      <div class="flex flex-col">
+        <el-button
+          v-for="exercise in allexercises"
+          class="!justify-start !ml-0"
+          :key="exercise.id"
+          text
+          @click="changeExercise(exercise.id)"
+        >
+          {{ exercise.id }}. {{ exercise.title }}
+        </el-button>
+      </div>
+    </el-col>
+    <el-col class="!overflow-y-auto px-10" :span="19">
+      <div v-if="exercise" class="flex flex-col">
+        <div class="flex items-center">
+          <h2>{{ exercise.title }}</h2>
+          <span class="ml-auto">ID: {{ exercise.id }}</span>
+        </div>
+
+        <el-text v-if="exercise" class="w-full" margin-top="20px">
+          <p class="whitespace-break-spaces">{{ exercise.content }}</p>
+          <el-input
+            v-model="input"
+            type="textarea"
+            :autosize="{ minRows: 15, maxRows: 50 }"
+            style="width: 100%"
+            placeholder="在此输入答案..."
+          />
+          <span>上传图片回答</span>
+          <el-upload
+            class="uploadpng"
+            drag
+            action="#"
+            multiple
+            :on-preview="handlePreview"
+            :on-remove="handleRemove"
+            list-type="picture"
+            :on-error="handleError"
+            :on-success="onFileChange"
           >
-            {{ exercise.id }}. {{ exercise.title }}
-          </el-button>
-        </div>
-      </el-col>
-      <el-col :span="18" :offset="1">
-        <div v-if="exercise" class="flex flex-col">
-          <div class="flex items-center">
-            <h2>{{ exercise.title }}</h2>
-            <span class="ml-auto">ID: {{ exercise.id }}</span>
-          </div>
+            <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+            <div class="el-upload__text"> Drop file here or <em>click to upload</em> </div>
+          </el-upload>
+          <el-button type="primary" @click="submit">提交</el-button>
+        </el-text>
+      </div>
 
-          <el-text v-if="exercise" class="w-full" margin-top="20px">
-            <p>{{ exercise.content }}</p>
-            <el-input
-              v-model="input"
-              type="textarea"
-              :autosize="{ minRows: 15, maxRows: 50 }"
-              style="width: 100%"
-              placeholder="在此输入答案..."
-            />
-            <span>上传图片回答</span>
-            <el-upload
-              class="uploadpng"
-              drag
-              action="#"
-              multiple
-              :on-preview="handlePreview"
-              :on-remove="handleRemove"
-              list-type="picture"
-              :on-error="handleError"
-              :on-success="onFileChange"
-            >
-              <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-              <div class="el-upload__text"> Drop file here or <em>click to upload</em> </div>
-            </el-upload>
-            <el-button type="primary" @click="submit">提交</el-button>
-          </el-text>
-        </div>
-
-        <el-empty
-          v-else
-          class="mt-10"
-          :image="ExercisePlaceholderWebP"
-          description="选择一个题目，开始做题吧"
-        ></el-empty>
-      </el-col>
-    </el-row>
+      <el-empty
+        v-else
+        class="mt-10"
+        :image="ExercisePlaceholderWebP"
+        description="选择一个题目，开始做题吧"
+      ></el-empty>
+    </el-col>
   </div>
 </template>
 
@@ -145,7 +144,7 @@
     solution.value.content = input.value
     solution.value.imageUrls = base64
     solution.value.creatorId = userStore.userInfo.id
-    if ((!solution.value.content)||(!solution.value.imageUrls)) {
+    if (!solution.value.content || !solution.value.imageUrls) {
       ElMessage.error('答案不能为空')
       return
     }

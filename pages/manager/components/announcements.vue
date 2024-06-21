@@ -64,7 +64,7 @@
           show-word-limit
           clearable
         />
-        <el-scrollbar v-else wrap-class="max-h-40 whitespace-pre-line">
+        <el-scrollbar v-else wrap-class="max-h-40 whitespace-break-spaces">
           {{ announcement.content }}
         </el-scrollbar>
       </el-card>
