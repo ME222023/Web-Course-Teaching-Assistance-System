@@ -139,6 +139,10 @@
     solution.value.content = input.value
     solution.value.imageUrls = base64
     solution.value.creatorId = userStore.userInfo.id
+    if ((!solution.value.content)||(!solution.value.imageUrls)) {
+      ElMessage.error('答案不能为空')
+      return
+    }
     try {
       const solutionClone = JSON.parse(JSON.stringify(solution.value));
 
@@ -150,9 +154,9 @@
       console.error('克隆 Solution 对象失败:', error);
       ElMessage.error('提交失败: ' + error);
     }
+    router.replace('/profile')
     // addSolution(solution.value)
     // console.log('提交的Solution对象:', solution.value)
-    // 在这里添加其他提交逻辑，例如发送到后端API
   }
   function handleError(){
     ElMessage.error('图片异常，请更换图片')
