@@ -2,7 +2,11 @@
   <div>
     <el-table v-loading="loading" :data="exercises" class="mt-4 w-10 !max-w-240">
       <el-table-column prop="title" label="实验名称" min-width="160" fixed></el-table-column>
-      <el-table-column prop="creatorId" label="用户ID" min-width="80"></el-table-column>
+      <el-table-column prop="creatorId" label="用户ID" min-width="80">
+        <template #default="{ row }">
+          <el-link>{{ row.creator.nickname ?? row.creator.id }}</el-link>
+        </template>
+      </el-table-column>
       <el-table-column prop="createdAt" label="发布时间" min-width="160">
         <template #default="{ row }">
           <el-tooltip :content="dayjs(row.createdAt).format('L LT')" placement="top">
@@ -20,6 +24,9 @@
       </el-table-column>
       <el-table-column label="操作" min-width="300px">
         <template #default="{ row }">
+          <el-button @click="exerciseDetailDialogRef?.show(row.id)">
+            学生提交情况
+          </el-button>
           <el-button type="primary" @click="onClickEditExercise(row)">编辑</el-button>
           <el-button type="danger" @click="onDeleteExercises(row.id)">删除</el-button>
         </template>
@@ -45,18 +52,23 @@
         <el-button type="primary" @click="onSubmitEditExercise">确定</el-button>
       </template>
     </el-dialog>
+
+    <!-- 实验提交情况 dialog -->
+    <exercise-detail-dialog ref="exerciseDetailDialogRef" />
   </div>
 </template>
 
 <script setup lang="ts">
   import { ref, onMounted } from 'vue'
   import { ElMessage } from 'element-plus'
-  import { deleteExercises, editExercises, listExercises } from '~/util/db'
-  import type { Exercise } from '~/types'
+  import { deleteExercises, editExercises, getUser, listExercises } from '~/util/db'
+  import type { Exercise, User } from '~/types'
   import dayjs from '~/util/dayjs'
+  import { handleError } from '~/util/error_parser'
+  import ExerciseDetailDialog from './exercise-detail-dialog.vue'
 
   const loading = ref(false)
-  const exercises = ref<Exercise[]>([])
+  const exercises = ref<Array<Exercise & { creator: User }>>([])
 
   const showEditExerciseDialog = ref(false)
   const editExerciseId = ref<number | undefined>()
@@ -64,6 +76,7 @@
     title: '',
     content: '',
   })
+  const exerciseDetailDialogRef = ref<InstanceType<typeof ExerciseDetailDialog>>()
 
   onMounted(async () => {
     loading.value = true
@@ -78,9 +91,15 @@
 
   const fetchExercises = async () => {
     try {
-      exercises.value = await listExercises()
+      const _exercises = await listExercises()
+      await Promise.all(
+        _exercises.map(async (exercise) => {
+          const creator = await getUser(exercise.creatorId)
+          exercises.value.push({ ...exercise, creator })
+        }),
+      )
     } catch (error) {
-      ElMessage.error('获取实验列表失败')
+      handleError('获取实验列表', error)
     }
   }
 
@@ -90,7 +109,7 @@
       ElMessage.success('删除实验成功')
       await fetchExercises()
     } catch (error) {
-      ElMessage.error('删除实验失败')
+      handleError('删除实验', error)
     }
   }
 
@@ -119,7 +138,7 @@
       editExerciseId.value = undefined
       showEditExerciseDialog.value = false
     } catch (error) {
-      ElMessage.error('编辑实验失败')
+      handleError('编辑实验', error)
     }
   }
 

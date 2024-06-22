@@ -12,18 +12,17 @@ const db = new Dexie('weboj-db') as Dexie & {
   announcements: EntityTable<Announcement, 'id'>
 }
 
-export function initDatabase() {
-  /**
-   * 初始化数据库的索引结构。Dexie 只需要初始化索引字段即可，不需要定义表结构（只用设置 TypeScript 类型，在上面）。
-   * https://dexie.org/docs/Version/Version.stores()#indexable-types
-   */
-  db.version(1).stores({
-    users: '++id, username, nickname, isDeleted, role, [id+isDeleted], isDisabled',
-    exercises: '++id, title, creatorId, createdAt, updatedAt, isPublished, isDeleted',
-    solutions: '++id, exerciseId, creatorId, content, language, createdAt, imageUrls, status',
-    announcements: '++id, creatorId, createdAt, isDeleted, title',
-  })
-}
+/**
+ * 初始化数据库的索引结构。Dexie 只需要初始化索引字段即可，不需要定义表结构（只用设置 TypeScript 类型，在上面）。
+ * https://dexie.org/docs/Version/Version.stores()#indexable-types
+ */
+db.version(1).stores({
+  users: '++id, username, nickname, isDeleted, role, [id+isDeleted], isDisabled',
+  exercises: '++id, title, creatorId, createdAt, updatedAt, isPublished, isDeleted',
+  solutions:
+    '++id, exerciseId, creatorId, content, language, createdAt, imageUrls, status, isDeleted',
+  announcements: '++id, creatorId, createdAt, isDeleted, title',
+})
 
 export async function login(username: string, password: string) {
   const userStore = useUserStore()
@@ -85,9 +84,9 @@ export async function register(username: string, password: string) {
   return signToken(userId, 0)
 }
 
-async function getUser(userId: number) {
+export async function getUser(userId: number) {
   const user = await db.users.where({ id: userId, isDeleted: 0 }).first()
-  if (!user) throw new Error('用户不存在')
+  if (!user) throw new Error(`用户不存在: ${userId}`)
   return user
 }
 
@@ -193,10 +192,9 @@ export async function resetPassword(userId: number) {
   return newPassword
 }
 
-/** 添加测试用的题目数据 */
-
 export async function addSolution(solution: Solution) {
-  const Solution = {
+  // console.log(Solution)
+  await db.solutions.add({
     exerciseId: solution.exerciseId,
     creatorId: solution.creatorId,
     content: solution.content,
@@ -204,9 +202,8 @@ export async function addSolution(solution: Solution) {
     createdAt: Date.now(),
     imageUrls: solution.imageUrls,
     status: solution.status,
-  }
-  // console.log(Solution)
-  await db.solutions.add(Solution)
+    isDeleted: 0,
+  })
 }
 //查询id为number的题目
 export async function getExerciseById(exerciseId: number) {
@@ -217,11 +214,16 @@ export async function getSolutionById(solutionId: number) {
   return db.solutions.where({ id: solutionId }).first()
 }
 
-export async function listSolution(userId?: number) {
-  let query = db.solutions
+export async function listSolution(filter?: { userId?: number; exerciseId?: number }) {
+  const query = db.solutions.where({ isDeleted: 0 })
 
-  if (userId) {
-    return query.where({ creatorId: userId }).toArray()
+  if (filter) {
+    if (filter.userId) {
+      query.and((x) => x.creatorId === filter.userId)
+    }
+    if (filter.exerciseId) {
+      query.and((x) => x.exerciseId === filter.exerciseId)
+    }
   }
 
   return query.toArray()

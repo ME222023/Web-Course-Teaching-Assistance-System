@@ -85,6 +85,7 @@ export interface Solution {
   imageUrls: string[]
   /** 提交状态，默认为 {@link SolutionStatus.Pending} */
   status: SolutionStatus
+  isDeleted: IsDeletedFlag
 }
 
 /** 站点设置 */

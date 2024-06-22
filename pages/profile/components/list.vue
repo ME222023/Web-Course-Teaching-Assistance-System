@@ -124,6 +124,10 @@
   import { listExercises, listSolution } from '~/util/db'
   import { Search } from '@element-plus/icons-vue'
 
+  type ExerciseWithSolution = Exercise & {
+    latestSolution?: Solution
+  }
+
   const drawer = ref(false)
   const exercise = ref<Exercise>()
   const solution = ref<Solution>()
@@ -132,10 +136,6 @@
   const combinedData1 = ref<ExerciseWithSolution[]>([])
   const router = useRouter()
   const input = ref('')
-
-  type ExerciseWithSolution = Exercise & {
-    latestSolution?: Solution
-  }
 
   onMounted(() => {
     watchEffect(async () => {

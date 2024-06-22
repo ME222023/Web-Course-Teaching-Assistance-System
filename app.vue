@@ -8,7 +8,6 @@
 
 <script setup lang="ts">
   import { zhCn } from 'element-plus/es/locale/index.mjs'
-  import { initDatabase } from './util/db'
 
   useColorMode().preference = 'light'
   useHead({
@@ -17,7 +16,10 @@
     },
   })
 
-  onBeforeMount(() => {
-    initDatabase()
+  onMounted(() => {
+    console.log('App mounted')
+  })
+  onUnmounted(() => {
+    console.log('App unmounted')
   })
 </script>
