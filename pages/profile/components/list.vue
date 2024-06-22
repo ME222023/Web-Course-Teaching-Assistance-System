@@ -1,6 +1,16 @@
 <template>
   <div class="flex flex-col ml-6 mt-2 min-w-120 w-full max-w-400">
-    <el-table :data="combinedData" style="width: 100%">
+    <el-input
+      v-model="input"
+      style="max-width: 550px"
+      placeholder="输入要搜索的题目标题"
+      class="input-with-select"
+    >
+      <template #append>
+        <el-button :icon="Search" @click="searchToResult" />
+      </template>
+    </el-input>
+    <el-table :data="combinedData1" style="width: 100%">
       <el-table-column prop="id" label="题目ID" width="100" />
       <el-table-column prop="title" label="题目标题" width="180" />
       <el-table-column label="提交时间" width="170">
@@ -112,13 +122,16 @@
   import { EL_SELECT_MONACO_LANGUAGES } from '~/constants'
   import type { Exercise, Solution } from '~/types'
   import { listExercises, listSolution } from '~/util/db'
+  import { Search } from '@element-plus/icons-vue'
 
   const drawer = ref(false)
   const exercise = ref<Exercise>()
   const solution = ref<Solution>()
   const userStore = useUserStore()
   const combinedData = ref<ExerciseWithSolution[]>([])
+  const combinedData1 = ref<ExerciseWithSolution[]>([])
   const router = useRouter()
+  const input = ref('')
 
   type ExerciseWithSolution = Exercise & {
     latestSolution?: Solution
@@ -143,7 +156,7 @@
           latestSolution: solution[0],
         }
       })
-
+      combinedData1.value = combinedData.value
       console.log('Combined Data:', combinedData.value)
     })
   })
@@ -161,6 +174,14 @@
       path: '/exercise',
       query: { id: id },
     })
+  }
+
+  function searchToResult() {
+    if (input.value === '') {
+      combinedData1.value = combinedData.value
+      return
+    }
+    combinedData1.value = combinedData.value.filter((item) => item.title.includes(input.value))
   }
 </script>
 
