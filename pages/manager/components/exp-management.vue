@@ -27,6 +27,7 @@
           <el-button @click="exerciseDetailDialogRef?.show(row.id)"> 学生提交情况 </el-button>
           <el-button type="primary" @click="onClickEditExercise(row)">编辑</el-button>
           <el-button type="danger" @click="showDeleteDialog(row.id)">删除</el-button>
+          <el-button type="primary" @click="onClickwdExercise(row.id)">撤销</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -39,7 +40,8 @@
         @reset="onResetEditExercise"
       />
       <template #footer>
-        <el-button @click="editExerciseId = undefined; showEditExerciseDialog = false">取消</el-button>
+        <el-button
+          @click="editExerciseId = undefined; showEditExerciseDialog = false">取消</el-button>
         <el-button type="primary" @click="onSubmitEditExercise">确定</el-button>
       </template>
     </el-dialog>
@@ -61,7 +63,13 @@
 <script setup lang="ts">
   import { ref, onMounted } from 'vue'
   import { ElMessage } from 'element-plus'
-  import { deleteExercises, editExercises, getUser, listExercises } from '~/util/db'
+  import {
+    deleteExercises,
+    editExercises,
+    getUser,
+    listExercises,
+    withdrawExercises,
+  } from '~/util/db'
   import type { Exercise, User } from '~/types'
   import dayjs from '~/util/dayjs'
   import { handleError } from '~/util/error_parser'
@@ -76,9 +84,9 @@
   const editExerciseForm = ref({
     title: '',
     content: '',
-    images: [] as string[], 
-    audios: [] as string[], 
-    videos: [] as string[], 
+    images: [] as string[],
+    audios: [] as string[],
+    videos: [] as string[],
   })
 
   const exerciseDetailDialogRef = ref<InstanceType<typeof ExerciseDetailDialog>>()
@@ -159,6 +167,7 @@
       editExerciseId.value = undefined
       showEditExerciseDialog.value = false
     } catch (error) {
+      console.log('erre', error)
       handleError('编辑实验', error)
     }
   }
@@ -172,6 +181,18 @@
       images: exercise.images || [],
       audios: exercise.audios || [],
       videos: exercise.videos || [],
+    }
+  }
+
+  const onClickwdExercise = async (id: number) => {
+    if (id) {
+      try {
+        await withdrawExercises(id)
+        ElMessage.success('撤回实验成功')
+        await fetchExercises()
+      } catch (error) {
+        handleError('撤回实验', error)
+      }
     }
   }
 
