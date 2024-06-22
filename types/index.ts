@@ -52,22 +52,6 @@ export interface Exercise {
   createdAt: Timestamp
   /** 题目的更新时间 */
   updatedAt: Timestamp
-  // 修改！！
-  // Eercises相关定义
-  // 保存实验信息到 exercise 表
-  // const index = {
-  //   // id: Math.random().toString(36).substr(2, 9), // 随机生成实验ID
-  //   creatorId: userId, // 用户ID
-  //   title: title, // 实验名称
-  //   createdAt: createdAt, // 发布时间
-  //   isDeleted: 0,
-  //   published: true,
-  //   content: storedData2.toString(), // 实验内容
-  //   images: imageFileList.value.map((file) => file.url), // 图像URL
-  //   audios: audioFileList.value.map((file) => file.url), // 音频URL
-  //   videos: videoFileList.value.map((file) => file.url), // 视频URL
-  //   // message: form.value.message,
-  // }
   images: string[]
   audios: string[]
   videos: string[]

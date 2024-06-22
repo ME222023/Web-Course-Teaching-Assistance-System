@@ -1,6 +1,5 @@
 <template>
   <div class="flex" style="height: calc(100vh - 80px)">
-    <!-- TODO: 让这个 el-col 单独可以滚动，不要影响其他地方 -->
     <el-col class="!overflow-auto" :span="5">
       <div class="flex flex-col">
         <el-button
@@ -22,17 +21,18 @@
         </div>
         <el-text v-if="exercise" class="w-full" margin-top="20px">
           <p class="whitespace-break-spaces">{{ exercise.content }}</p>
-          <div v-if="exercise.images">
+          <div class="flex flex-col gap-y-2" v-if="exercise.images.length">
             <p>图片:</p>
-            <img
+            <el-image
               v-for="(url, index) in exercise.images"
+              class="w-70% max-w-160 h-auto"
               :key="index"
               :src="url"
-              width="70%"
-              height="auto"
+              :preview-src-list="exercise.images"
+              :initial-index="index"
             />
           </div>
-          <div v-if="exercise.audios">
+          <div v-if="exercise.audios.length">
             <p>音频:</p>
             <audio
               v-for="(url, index) in exercise.audios"
@@ -43,7 +43,7 @@
               controls
             ></audio>
           </div>
-          <div v-if="exercise.videos">
+          <div v-if="exercise.videos.length">
             <p>视频:</p>
             <video
               v-for="(url, index) in exercise.videos"

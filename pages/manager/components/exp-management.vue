@@ -12,9 +12,9 @@
           </el-tooltip>
         </template>
       </el-table-column>
-      <el-table-column prop="published" label="发布状态" min-width="100">
+      <el-table-column prop="isPublished" label="发布状态" min-width="100">
         <template #default="{ row }">
-          <el-tag v-if="row.published" type="success">已发布</el-tag>
+          <el-tag v-if="row.isPublished" type="success">已发布</el-tag>
           <el-tag v-else type="danger">未发布</el-tag>
         </template>
       </el-table-column>
@@ -26,7 +26,7 @@
       </el-table-column>
     </el-table>
     <!-- TODO1. 增加更多的弹窗模块 -->
-    <el-dialog v-model="editExerciseId" title="编辑实验" width="600px">
+    <el-dialog v-model="showEditExerciseDialog" title="编辑实验" width="600px">
       <el-form :model="editExerciseForm" label-width="100px">
         <el-form-item label="实验名称">
           <el-input v-model="editExerciseForm.title" placeholder="实验名称"></el-input>
@@ -58,6 +58,7 @@
   const loading = ref(false)
   const exercises = ref<Exercise[]>([])
 
+  const showEditExerciseDialog = ref(false)
   const editExerciseId = ref<number | undefined>()
   const editExerciseForm = ref({
     title: '',
@@ -116,6 +117,7 @@
       ElMessage.success('编辑实验成功')
       await fetchExercises()
       editExerciseId.value = undefined
+      showEditExerciseDialog.value = false
     } catch (error) {
       ElMessage.error('编辑实验失败')
     }
@@ -123,6 +125,7 @@
 
   const onClickEditExercise = (exercise: Exercise) => {
     editExerciseId.value = exercise.id
+    showEditExerciseDialog.value = true
     editExerciseForm.value = { title: exercise.title, content: exercise.content }
   }
 </script>
