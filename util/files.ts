@@ -32,7 +32,7 @@ export async function selectImage(options?: SelectImageOptions) {
   })
 }
 
-export async function handleFileChange(uploadFiles: UploadFiles): Promise<string[]> {
+export async function convertFileToBase64(uploadFiles: UploadFiles): Promise<string[]> {
   return new Promise((resolve, reject) => {
     const files = Array.from(uploadFiles);
     const promises = files.map(file => new Promise<string>((resolve, reject) => {

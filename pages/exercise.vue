@@ -89,7 +89,7 @@
   import type { Exercise, Solution } from '~/types'
   import { SolutionStatus } from '~/types'
   import { UploadFilled } from '@element-plus/icons-vue'
-  import { handleFileChange } from '~/util/files'
+  import { convertFileToBase64 } from '~/util/files'
   import ExercisePlaceholderWebP from '~/assets/icons/exercise-placeholder.webp'
   import type MonacoEditor from 'nuxt-monaco-editor/dist/runtime/MonacoEditor.client.vue'
   import { MonacoPlaceholderContentWidget } from '~/util/monaco-editor'
@@ -137,7 +137,7 @@
 
   const onFileChange = async (_: any, uploadFile: UploadFile, uploadFiles: UploadFiles) => {
     try {
-      const base64Strings = await handleFileChange(uploadFiles)
+      const base64Strings = await convertFileToBase64(uploadFiles)
       base64Strings.forEach((base64) => {
         console.log(base64)
       })

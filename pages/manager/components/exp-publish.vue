@@ -12,24 +12,24 @@
           >
             <el-form-item
               label="实验名称"
-              prop="name"
+              prop="title"
               :rules="[{ required: true, message: '请输入实验名称', trigger: 'blur' }]"
             >
               <el-input
-                v-model="form.name"
-                placeholder="* Please enter the name of your experiment"
+                v-model="form.title"
+                placeholder="请输入实验名称"
               ></el-input>
             </el-form-item>
             <el-form-item
               label="实验描述"
-              prop="message"
+              prop="content"
               :rules="[{ required: true, message: '请输入实验描述', trigger: 'blur' }]"
             >
               <el-input
                 type="textarea"
-                v-model="form.message"
+                v-model="form.content"
                 rows="6"
-                placeholder="* Please enter the description of your experiment"
+                placeholder="请输入实验描述"
               ></el-input>
             </el-form-item>
             <el-form-item label="上传图片">
@@ -109,8 +109,10 @@
 <script setup lang="ts">
   import { ref } from 'vue'
   import { ElMessage } from 'element-plus'
-  import type { UploadFile } from 'element-plus'
+  import type { FormInstance, UploadFile } from 'element-plus'
   import ImageList from './ImageList.vue'
+  import { addExercise } from '~/util/db'
+  import { convertFileToBase64 } from '~/util/files'
 
   const imageFileList = ref<UploadFile[]>([])
   const audioFileList = ref<UploadFile[]>([])
@@ -118,8 +120,8 @@
   const userStore = useUserStore()
 
   interface Form {
-    name: string
-    message: string
+    title: string
+    content: string
   }
 
   interface UploadInfo {
@@ -127,10 +129,10 @@
     fail: number
   }
 
-  const questionForm = ref<HTMLFormElement | null>(null)
+  const questionForm = ref<FormInstance>()
   const form = ref<Form>({
-    name: '',
-    message: '',
+    title: '',
+    content: '',
   })
 
   const uploadInfo = ref<Record<'images' | 'audios' | 'videos', UploadInfo>>({
@@ -179,8 +181,7 @@
     if (file.size > 10 * 1024 * 1024) {
       ElMessage.error('音频文件过大，不能超过10MB')
       uploadInfo.value.audios.fail++
-      return
-      false
+      return false
     }
     return true
   }
@@ -199,130 +200,22 @@
     return true
   }
 
-  function saveExpData(index:Object) {
-  const dbName = 'weboj-db';
-  const dbVersion = 11; // Increment this number if you make changes to the schema
-  let db: IDBDatabase | null = null;
+  const onSubmit = async () => {
+    if (!userStore.userInfo?.id) return
+    const isValid = await questionForm.value?.validate().catch(() => false)
+    if (!isValid) return ElMessage.error('请完善表单信息')
 
-  const request = indexedDB.open(dbName, dbVersion);
-
-  request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
-    db = (event.target as IDBOpenDBRequest).result;
-    if (!db.objectStoreNames.contains('exercises')) {
-      db.createObjectStore('exercises', { keyPath: 'id' });
-    }
-  };
-
-  request.onsuccess = (event: Event) => {
-    db = (event.target as IDBOpenDBRequest).result;
-    console.log('Database opened successfully');
-
-    // Store your data once the database is opened
-
-    // const index = {
-    //   id: Math.random().toString(36).substr(2, 9), // 随机生成实验ID
-    //   creatorId: userId, // 用户ID
-    //   title: title, // 实验名称
-    //   createdAt: createdAt, // 发布时间
-    //   isDeleted: 0,
-    //   published: true,
-    //   content: storedData2.toString(), // 实验内容
-    //   images: imageFileList.value.map((file) => file.url), // 图像URL
-    //   audios: audioFileList.value.map((file) => file.url), // 音频URL
-    //   videos: videoFileList.value.map((file) => file.url), // 视频URL
-    // };
-
-
-    addExerciseToIndexedDB(index);
-    // 提示成功
-    ElMessage.success('实验发布成功！')
-
-  };
-
-  request.onerror = (event: Event) => {
-    console.error('Database error:', (event.target as IDBOpenDBRequest).error?.message);
-    ElMessage.error('实验发布失败！')
-  };
-
-  function addExerciseToIndexedDB(exercise: Object) {
-    if (!db) {
-      console.error('Database is not initialized');
-      return;
-    }
-
-    const transaction = db.transaction(['exercises'], 'readwrite');
-    const objectStore = transaction.objectStore('exercises');
-
-    const request = objectStore.add(exercise);
-
-    request.onsuccess = () => {
-      console.log('Exercise added to IndexedDB:', exercise);
-    };
-
-    request.onerror = (event: Event) => {
-      console.error('Error adding exercise to IndexedDB:', (event.target as IDBRequest).error?.message);
-    };
-  }
-}
-
-
-  const onSubmit = () => {
-    if (questionForm.value) {
-      questionForm.value.validate((valid: boolean) => {
-        if (valid) {
-          // 获取用户名
-          const acc_name = localStorage.getItem('account')
-
-          // 获取实验名称和发布时间
-          const title = form.value.name
-          const createdAt = new Date().toLocaleString()
-
-          console.log('title:', title)
-          console.log('form.value:', form.value)
-
-          // 存储数据到 localStorage
-          let storedData1 = JSON.parse(localStorage.getItem('submittedData1') || '[]')
-          let storedData2 = JSON.parse(localStorage.getItem('submittedData2') || '[]')
-
-          storedData1.unshift(form.value.name)
-          storedData2.unshift(form.value.message)
-
-          // const account = localStorage.getItem('account');
-          const userInfo = userStore.userInfo
-          const userId = userInfo?.id
-
-          // 保存实验信息到 exercise 表
-          const index = {
-            // id: Math.random().toString(36).substr(2, 9), // 随机生成实验ID
-            creatorId: userId, // 用户ID
-            title: title, // 实验名称
-            createdAt: createdAt, // 发布时间
-            isDeleted: 0,
-            published: true,
-            content: storedData2.toString(), // 实验内容
-            images: imageFileList.value.map((file) => file.url), // 图像URL
-            audios: audioFileList.value.map((file) => file.url), // 音频URL
-            videos: videoFileList.value.map((file) => file.url), // 视频URL
-            // message: form.value.message,
-          }
-          //localStorage.setItem('实验', JSON.stringify(index))
-          saveExpData(index)
-
-          // 保存下面的信息到json对象再保存到localStorage
-          // localStorage.setItem(`indexins1${form.value.name}${userId}`, JSON.stringify(index));
-          // localStorage.setItem('submittedData1', JSON.stringify(storedData1));
-          // localStorage.setItem(`submittedData${userId}`, JSON.stringify(storedData1));
-          // localStorage.setItem(`imgURLs${title}${userId}`, JSON.stringify([])); // 修改此处以保存图片URL
-          // localStorage.setItem(`${title}.content${userId}`, JSON.stringify(storedData2.toString()));
-          // localStorage.setItem(`typeof${title}${userId}`, "0");
-          // localStorage.setItem(`publishTime${title}${userId}`, createdAt);
-          onReset()
-        } else {
-          ElMessage.error('请完善表单信息')
-          return false
-        }
-      })
-    }
+    await addExercise({
+      creatorId: userStore.userInfo.id,
+      title: form.value.title,
+      isPublished: 1,
+      content: form.value.content,
+      images: await convertFileToBase64(imageFileList.value),
+      audios: await convertFileToBase64(audioFileList.value),
+      videos: await convertFileToBase64(videoFileList.value),
+    })
+    ElMessage.success('发布成功')
+    onReset()
   }
 
   // 清空上传文件列表
@@ -339,8 +232,8 @@
     // 重置上传信息
     resetUploadInfo()
     // 清空表单数据
-    form.value.name = ''
-    form.value.message = ''
+    form.value.title = ''
+    form.value.content = ''
     // 清空上传文件列表
     clearAllUploads()
   }

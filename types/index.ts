@@ -68,9 +68,11 @@ export interface Exercise {
   //   videos: videoFileList.value.map((file) => file.url), // 视频URL
   //   // message: form.value.message,
   // }
-  media: ExerciseMedia[]
+  images: string[]
+  audios: string[]
+  videos: string[]
   /** 题目是否已被发布。学生默认只能看到已发布的内容。 */
-  isPublished: boolean
+  isPublished: number
   isDeleted: IsDeletedFlag
 }
 

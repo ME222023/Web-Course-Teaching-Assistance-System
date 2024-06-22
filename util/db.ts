@@ -210,18 +210,8 @@ export async function addTestExerciseData() {
   const now = Date.now()
   const exercises = [
     {
-      title: 'Hello, World!',
-      content: '请输出 "Hello, World!"',
-      creatorId: 1,
-      createdAt: now,
-      updatedAt: now,
-      isPublished: true,
-      isDeleted: 0,
-      media: [],
-    },
-    {
-      title: 'A + B Problem',
-      content: '输入两个整数 A 和 B，输出 A + B 的结果',
+      title: '比较长的一道题目',
+      content: '{"pending":{"h3pe":{"time":1718799426,"type":"free","user":1813656985,"state":"free:4","title":"时光正好（2024）4K 更至EP30","pic":["AgACAgUAAxkBAAF5Ibxmcsxu4jH2lE6ImFFSTxQAAbqUHj4AAl6-MRtBP5lXoYpo_Mc6p_4BAAMCAAN5AAM1BA"],"desc":"名称：时光正好（2024）4K 更至EP30\n\n描述：人到中年、以为一切尽在掌握中的许梦安（秦海璐饰）生活骤然失控，公司大面积裁员、职场晋升受阻、老公李临（保剑锋饰）失业、女儿疑似早恋、不期而至的二胎等问题一股脑儿涌来，让她心力交瘁。如何在现实压力中找到再出发的动力，在自我成长和家庭责任间努力平衡，是她亟待解决的问题。另一边闺蜜陈婉真（左小青 饰）在全职太太生活中，被老公于海（田雨 饰）漠视，备受煎熬的她决定重返职场。许梦安的妹妹许梦心（潘之琳饰）则饱受孕期激素失调的折磨。\n\n链接：https://www.alipan.com/s/9YDSaRvJ5Bj\n\n📁 大小：NG\n🏷 标签：#时光正好 #剧情 #家庭 #4K #60帧 #BestWEB #quark","entities":[{"offset":244,"length":36,"type":"url"},{"offset":297,"length":5,"type":"hashtag"},{"offset":303,"length":3,"type":"hashtag"},{"offset":307,"length":3,"type":"hashtag"},{"offset":311,"length":3,"type":"hashtag"},{"offset":315,"length":4,"type":"hashtag"},{"offset":320,"length":8,"type":"hashtag"},{"offset":329,"length":6,"type":"hashtag"}],"size":"","tag":"","link":"","channelMsgId":null}},"advancedReject":{}}',
       creatorId: 1,
       createdAt: now,
       updatedAt: now,
@@ -235,6 +225,7 @@ export async function addTestExerciseData() {
     await db.exercises.add(exercise)
   }
 }
+
 export async function addSolution(solution: Solution) {
   initDatabase()
   const Solution = {
@@ -318,4 +309,13 @@ export async function listExercises(filter?: { keyword?: string }) {
   }
 
   return query.toArray()
+}
+
+export async function addExercise(data: Omit<Exercise, 'id' | 'updatedAt' | 'createdAt' | 'isDeleted'>) {
+  await db.exercises.add({
+    ...data,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    isDeleted: 0,
+  })
 }
