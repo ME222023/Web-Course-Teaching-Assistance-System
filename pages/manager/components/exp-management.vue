@@ -2,11 +2,7 @@
   <div>
     <el-table v-loading="loading" :data="exercises" class="mt-4 w-10 !max-w-240">
       <el-table-column prop="title" label="实验名称" min-width="160" fixed></el-table-column>
-      <el-table-column prop="creatorId" label="用户ID" min-width="80">
-        <template #default="{ row }">
-          <el-link>{{ row.creator.nickname ?? row.creator.id }}</el-link>
-        </template>
-      </el-table-column>
+      <el-table-column prop="creatorId" label="用户ID" min-width="80"></el-table-column>
       <el-table-column prop="createdAt" label="发布时间" min-width="160">
         <template #default="{ row }">
           <el-tooltip :content="dayjs(row.createdAt).format('L LT')" placement="top">
@@ -24,136 +20,134 @@
       </el-table-column>
       <el-table-column label="操作" min-width="300px">
         <template #default="{ row }">
-          <el-button @click="exerciseDetailDialogRef?.show(row.id)">
-            学生提交情况
-          </el-button>
           <el-button type="primary" @click="onClickEditExercise(row)">编辑</el-button>
           <el-button type="danger" @click="onDeleteExercises(row.id)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
-    <!-- TODO1. 增加更多的弹窗模块 -->
+    
+    <!-- 弹窗模块 -->
     <el-dialog v-model="showEditExerciseDialog" title="编辑实验" width="600px">
-      <el-form :model="editExerciseForm" label-width="100px">
-        <el-form-item label="实验名称">
-          <el-input v-model="editExerciseForm.title" placeholder="实验名称"></el-input>
-        </el-form-item>
-        <el-form-item label="实验内容"></el-form-item>
-        <el-input
-          v-model="editExerciseForm.content"
-          type="textarea"
-          :rows="10"
-          placeholder="实验内容"
-        ></el-input>
-      </el-form>
+      <ExperimentForm :initialForm="editExerciseForm" @submit="onSubmitEditExercise" @reset="onResetEditExercise" />
       <template #footer>
-        <!--editExerciseId是一个ref对象，实现同步更新-->
-        <el-button @click="editExerciseId = undefined">取消</el-button>
+        <el-button @click="editExerciseId = undefined; showEditExerciseDialog = false">取消</el-button>
         <el-button type="primary" @click="onSubmitEditExercise">确定</el-button>
       </template>
     </el-dialog>
-
-    <!-- 实验提交情况 dialog -->
-    <exercise-detail-dialog ref="exerciseDetailDialogRef" />
   </div>
 </template>
 
 <script setup lang="ts">
-  import { ref, onMounted } from 'vue'
-  import { ElMessage } from 'element-plus'
-  import { deleteExercises, editExercises, getUser, listExercises } from '~/util/db'
-  import type { Exercise, User } from '~/types'
-  import dayjs from '~/util/dayjs'
-  import { handleError } from '~/util/error_parser'
-  import ExerciseDetailDialog from './exercise-detail-dialog.vue'
+import { ref, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
+import { deleteExercises, editExercises, listExercises } from '~/util/db'
+import type { Exercise } from '~/types'
+import dayjs from '~/util/dayjs'
+import ExperimentForm from './ExperimentForm-manage.vue'
 
-  const loading = ref(false)
-  const exercises = ref<Array<Exercise & { creator: User }>>([])
+const loading = ref(false)
+const exercises = ref<Exercise[]>([])
 
-  const showEditExerciseDialog = ref(false)
-  const editExerciseId = ref<number | undefined>()
-  const editExerciseForm = ref({
+const showEditExerciseDialog = ref(false)
+const editExerciseId = ref<number | undefined>()
+const editExerciseForm = ref({
+  title: '',
+  content: '',
+  images: [] as string[], // 将 images 属性定义为 string[]
+  audios: [] as string[], // 将 audios 属性定义为 string[]
+  videos: [] as string[] // 将 videos 属性定义为 string[]
+})
+
+onMounted(async () => {
+  loading.value = true
+  try {
+    await fetchExercises()
+  } catch (error) {
+    ElMessage.error('加载实验失败')
+  } finally {
+    loading.value = false
+  }
+})
+
+const fetchExercises = async () => {
+  try {
+    exercises.value = await listExercises()
+  } catch (error) {
+    ElMessage.error('获取实验列表失败')
+  }
+}
+
+const onDeleteExercises = async (id: number) => {
+  try {
+    await deleteExercises(id)
+    ElMessage.success('删除实验成功')
+    await fetchExercises()
+  } catch (error) {
+    ElMessage.error('删除实验失败')
+  }
+}
+
+const onSubmitEditExercise = async () => {
+  try {
+    if (!editExerciseForm.value.title) {
+      ElMessage.error('实验名称不能为空')
+      return
+    }
+    if (!editExerciseForm.value.content) {
+      ElMessage.error('实验内容不能为空')
+      return
+    }
+
+    if (!editExerciseId.value) {
+      ElMessage.error('编辑实验id不存在')
+      return
+    }
+    await editExercises({
+      id: editExerciseId.value,
+      title: editExerciseForm.value.title,
+      content: editExerciseForm.value.content,
+      images: editExerciseForm.value.images,
+      audios: editExerciseForm.value.audios,
+      videos: editExerciseForm.value.videos
+    })
+    ElMessage.success('编辑实验成功')
+    await fetchExercises()
+    editExerciseId.value = undefined
+    showEditExerciseDialog.value = false
+  } catch (error) {
+    ElMessage.error('编辑实验失败')
+  }
+}
+
+const onClickEditExercise = (exercise: Exercise) => {
+  editExerciseId.value = exercise.id
+  showEditExerciseDialog.value = true
+  editExerciseForm.value = { 
+    title: exercise.title, 
+    content: exercise.content, 
+    images: exercise.images || [], 
+    audios: exercise.audios || [], 
+    videos: exercise.videos || [] 
+  }
+}
+
+const onResetEditExercise = () => {
+  editExerciseForm.value = {
     title: '',
     content: '',
-  })
-  const exerciseDetailDialogRef = ref<InstanceType<typeof ExerciseDetailDialog>>()
-
-  onMounted(async () => {
-    loading.value = true
-    try {
-      await fetchExercises()
-    } catch (error) {
-      ElMessage.error('加载实验失败')
-    } finally {
-      loading.value = false
-    }
-  })
-
-  const fetchExercises = async () => {
-    try {
-      const _exercises = await listExercises()
-      await Promise.all(
-        _exercises.map(async (exercise) => {
-          const creator = await getUser(exercise.creatorId)
-          exercises.value.push({ ...exercise, creator })
-        }),
-      )
-    } catch (error) {
-      handleError('获取实验列表', error)
-    }
+    images: [],
+    audios: [],
+    videos: []
   }
-
-  const onDeleteExercises = async (id: number) => {
-    try {
-      await deleteExercises(id)
-      ElMessage.success('删除实验成功')
-      await fetchExercises()
-    } catch (error) {
-      handleError('删除实验', error)
-    }
-  }
-
-  const onSubmitEditExercise = async () => {
-    try {
-      if (!editExerciseForm.value.title) {
-        ElMessage.error('实验名称不能为空')
-        return
-      }
-      if (!editExerciseForm.value.content) {
-        ElMessage.error('实验内容不能为空')
-        return
-      }
-
-      if (!editExerciseId.value) {
-        ElMessage.error('编辑实验id不存在')
-        return
-      }
-      await editExercises({
-        id: editExerciseId.value,
-        title: editExerciseForm.value.title,
-        content: editExerciseForm.value.content,
-      })
-      ElMessage.success('编辑实验成功')
-      await fetchExercises()
-      editExerciseId.value = undefined
-      showEditExerciseDialog.value = false
-    } catch (error) {
-      handleError('编辑实验', error)
-    }
-  }
-
-  const onClickEditExercise = (exercise: Exercise) => {
-    editExerciseId.value = exercise.id
-    showEditExerciseDialog.value = true
-    editExerciseForm.value = { title: exercise.title, content: exercise.content }
-  }
+  showEditExerciseDialog.value = false
+}
 </script>
 
 <style scoped>
-  .mt-4 {
-    margin-top: 1rem;
-  }
-  .w-10 {
-    width: 100%;
-  }
+.mt-4 {
+  margin-top: 1rem;
+}
+.w-10 {
+  width: 100%;
+}
 </style>
