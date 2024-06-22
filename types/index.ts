@@ -52,9 +52,9 @@ export interface Exercise {
   createdAt: Timestamp
   /** 题目的更新时间 */
   updatedAt: Timestamp
-  images: string[]
-  audios: string[]
-  videos: string[]
+  images?: string[]
+  audios?: string[]
+  videos?: string[]
   /** 题目是否已被发布。学生默认只能看到已发布的内容。 */
   isPublished: number
   isDeleted: IsDeletedFlag

@@ -40,40 +40,40 @@
       </el-row>
       <el-text v-if="exercise" margin-top="20px">
         <p style="font-size: 15px">{{ exercise.content }}</p>
-        <div v-if="exercise.images">
-            <p>图片:</p>
-            <img
-              v-for="(url, index) in exercise.images"
-              :key="index"
-              :src="url"
-              width="70%"
-              height="auto"
-            />
-          </div>
-          <div v-if="exercise.audios">
-            <p>音频:</p>
-            <audio
-              v-for="(url, index) in exercise.audios"
-              :key="index"
-              :src="url"
-              width="70%"
-              height="auto"
-              controls
-            ></audio>
-          </div>
-          <div v-if="exercise.videos">
-            <p>视频:</p>
-            <video
-              v-for="(url, index) in exercise.videos"
-              :key="index"
-              :src="url"
-              width="30%"
-              height="auto"
-              controls
-            ></video>
-          </div>
+        <div v-if="exercise.images?.length">
+          <p>图片:</p>
+          <img
+            v-for="(url, index) in exercise.images"
+            :key="index"
+            :src="url"
+            width="70%"
+            height="auto"
+          />
+        </div>
+        <div v-if="exercise.audios?.length">
+          <p>音频:</p>
+          <audio
+            v-for="(url, index) in exercise.audios"
+            :key="index"
+            :src="url"
+            width="70%"
+            height="auto"
+            controls
+          ></audio>
+        </div>
+        <div v-if="exercise.videos?.length">
+          <p>视频:</p>
+          <video
+            v-for="(url, index) in exercise.videos"
+            :key="index"
+            :src="url"
+            width="30%"
+            height="auto"
+            controls
+          ></video>
+        </div>
       </el-text>
-      
+
       <h2>你的答案:</h2>
       <el-text v-if="solution" margin-top="20px">
         <p>

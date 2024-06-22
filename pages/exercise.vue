@@ -21,7 +21,7 @@
         </div>
         <el-text v-if="exercise" class="w-full" margin-top="20px">
           <p class="whitespace-break-spaces">{{ exercise.content }}</p>
-          <div class="flex flex-col gap-y-2" v-if="exercise.images.length">
+          <div class="flex flex-col gap-y-2" v-if="exercise.images?.length">
             <p>图片:</p>
             <el-image
               v-for="(url, index) in exercise.images"
@@ -32,7 +32,7 @@
               :initial-index="index"
             />
           </div>
-          <div v-if="exercise.audios.length">
+          <div v-if="exercise.audios?.length">
             <p>音频:</p>
             <audio
               v-for="(url, index) in exercise.audios"
@@ -43,7 +43,7 @@
               controls
             ></audio>
           </div>
-          <div v-if="exercise.videos.length">
+          <div v-if="exercise.videos?.length">
             <p>视频:</p>
             <video
               v-for="(url, index) in exercise.videos"
