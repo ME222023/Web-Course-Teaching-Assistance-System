@@ -234,7 +234,7 @@ export async function getSolutionById(solutionId: number) {
 /** TODO: 查询题目列表，参数待定 */
 export async function listExercise() {
   initDatabase()
-  return db.exercises.toArray()
+  return db.exercises.where({ isDeleted: 0 }).toArray()
 }
 
 export async function listSolution(userId?: number) {
