@@ -300,3 +300,22 @@ export async function deleteAnnouncement(id: number) {
   const flag = await db.announcements.where({ id, isDeleted: 0 }).modify({ isDeleted: 1 })
   if (!flag) throw new Error('此公告不存在')
 }
+
+export async function editEercises(data: Partial<Omit<Exercise, 'id'>> & { id: number }) {
+  return db.exercises.update(data.id, data)
+}
+
+export async function deleteExercises(id: number) {
+  const flag = await db.exercises.where({ id, isDeleted: 0 }).modify({ isDeleted: 1 })
+  if (!flag) throw new Error('此实验不存在')
+}
+
+export async function listExercises(filter?: { keyword?: string }) {
+  const query = db.exercises.where({ isDeleted: 0 })
+
+  if (filter?.keyword) {
+    query.and((a) => a.title.includes(filter.keyword!))
+  }
+
+  return query.toArray()
+}
