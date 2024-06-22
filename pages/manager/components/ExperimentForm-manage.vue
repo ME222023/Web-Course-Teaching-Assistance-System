@@ -5,7 +5,7 @@
       prop="title"
       :rules="[{ required: true, message: '请输入实验名称', trigger: 'blur' }]"
     >
-      <el-input v-model="form.title" placeholder="请输入实验名称"></el-input>
+      <el-input v-model="initialForm.title" placeholder="请输入实验名称"></el-input>
     </el-form-item>
     <el-form-item
       label="实验描述"
@@ -14,7 +14,7 @@
     >
       <el-input
         type="textarea"
-        v-model="form.content"
+        v-model="initialForm.content"
         rows="6"
         placeholder="请输入实验描述"
       ></el-input>
@@ -39,10 +39,9 @@
     <el-form-item label="上传音频">
       <el-upload
         action="#"
-        list-type="picture"
         multiple
         accept="audio/mp3,audio/wav"
-        :file-list="audioFileList"
+        v-model:file-list="audioFileList"
         :on-success="handleAudioUpload"
         :on-remove="handleRemove('audios')"
         :before-upload="beforeAudioUpload"
@@ -57,10 +56,9 @@
     <el-form-item label="上传视频">
       <el-upload
         action="#"
-        list-type="picture"
         multiple
         accept="video/mp4"
-        :file-list="videoFileList"
+        v-model:file-list="videoFileList"
         :on-success="handleVideoUpload"
         :on-remove="handleRemove('videos')"
         :before-upload="beforeVideoUpload"
@@ -85,6 +83,9 @@
 </template>
 
 <script setup lang="ts">
+  import { ref, defineProps, defineEmits, watch } from 'vue'
+  import { convertFileToBase64 } from '~/util/files'
+
   const props = defineProps({
     initialForm: {
       type: Object,
@@ -109,17 +110,26 @@
 
   watch(
     () => props.initialForm,
-    (newForm) => {
+    (newForm, oldForm) => {
       form.value = { ...newForm }
+      if (
+        oldForm &&
+        JSON.stringify(newForm.images) == JSON.stringify(oldForm.images) &&
+        JSON.stringify(newForm.audios) == JSON.stringify(oldForm.audios) &&
+        JSON.stringify(newForm.videos) == JSON.stringify(oldForm.videos)
+      ) {
+        return
+      }
       // 使用类型断言来告诉 TypeScript url 是一个字符串
       imageFileList.value = newForm.images.map(
-        (url) => ({ name: url, url }) as { name: string; url: string },
+        (url: string) => ({ name: '', url }) as { name: string; url: string },
       )
+
       audioFileList.value = newForm.audios.map(
-        (url) => ({ name: url, url }) as { name: string; url: string },
+        (url: string) => ({ name: '', url }) as { name: string; url: string },
       )
       videoFileList.value = newForm.videos.map(
-        (url) => ({ name: url, url }) as { name: string; url: string },
+        (url: string) => ({ name: '', url }) as { name: string; url: string },
       )
     },
     { deep: true, immediate: true },
@@ -131,34 +141,42 @@
     videos: { success: 0, fail: 0 },
   })
 
-  const handleImageUpload = (response: any, file: any) => {
+  const handleImageUpload = async (response: any, file: any) => {
     // 不直接存储url的信息
     //imageFileList.value.push({ name: file.name, url: URL.createObjectURL(file.raw) })
     //uploadInfo.value.images.success += 1
     // 获取文件名
+    // console.log(file)
     const fileName = file.name
     // 添加到文件列表中，只存储文件名
-    imageFileList.value.push({ name: fileName, url: fileName })
+    let url = await convertFileToBase64([file])
+    props.initialForm.images.push(url)
+    // imageFileList.value.push({ name: fileName, url: fileName })
     uploadInfo.value.images.success += 1
   }
 
-  const handleAudioUpload = (response: any, file: any) => {
+  const handleAudioUpload = async (response: any, file: any) => {
     //audioFileList.value.push({ name: file.name, url: URL.createObjectURL(file.raw) })
     //uploadInfo.value.audios.success += 1
     // 获取文件名
     const fileName = file.name
     // 添加到文件列表中，只存储文件名
-    audioFileList.value.push({ name: fileName, url: fileName })
+    //audioFileList.value.push({ name: fileName, url: fileName })
+    let url = await convertFileToBase64([file])
+    props.initialForm.audios.push(url)
     uploadInfo.value.audios.success += 1
   }
 
-  const handleVideoUpload = (response: any, file: any) => {
+  const handleVideoUpload = async (response: any, file: any) => {
     //videoFileList.value.push({ name: file.name, url: URL.createObjectURL(file.raw) })
     //uploadInfo.value.videos.success += 1
     // 获取文件名
     const fileName = file.name
     // 添加到文件列表中，只存储文件名
-    videoFileList.value.push({ name: fileName, url: fileName })
+    //videoFileList.value.push({ name: fileName, url: fileName })
+    let url = await convertFileToBase64([file])
+    //console.log('handleVideosUpload', url)
+    props.initialForm.videos.push(url)
     uploadInfo.value.videos.success += 1
   }
 
@@ -185,17 +203,16 @@
   }
 
   const beforeAudioUpload = (file: File) => {
-    const isMP3 = file.type === 'audio/mp3'
-    const isWAV = file.type === 'audio/wav'
-    const isLt10M = file.size / 1024 / 1024 < 10
-
-    if (!isMP3 && !isWAV) {
-      ElMessage.error('上传音频只能是 MP3/WAV 格式!')
+    if (!/\.(mp3|wav)$/i.test(file.name)) {
+      ElMessage.error('只能上传 MP3、WAV 格式的音频')
+      return false
     }
-    if (!isLt10M) {
-      ElMessage.error('上传音频大小不能超过 10MB!')
+    if (file.size > 10 * 1024 * 1024) {
+      ElMessage.error('音频文件过大，不能超过10MB')
+      uploadInfo.value.audios.fail++
+      return false
     }
-    return (isMP3 || isWAV) && isLt10M
+    return true
   }
 
   const beforeVideoUpload = (file: File) => {
