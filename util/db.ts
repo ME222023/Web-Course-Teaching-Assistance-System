@@ -214,8 +214,12 @@ export async function getSolutionById(solutionId: number) {
   return db.solutions.where({ id: solutionId }).first()
 }
 
-export async function getSolutionByExerciseId(exerciseId: number) {
-  return db.solutions.where({ exerciseId: exerciseId, isDeleted: 0 }).first()
+export async function getSolutionByExerciseId(exerciseId: number, creatorId?: number) {
+  const filter: Partial<Solution> = { exerciseId, isDeleted: 0 }
+  if (creatorId) {
+    filter.creatorId = creatorId
+  }
+  return db.solutions.where(filter).first()
 }
 
 export async function listSolution(filter?: { userId?: number; exerciseId?: number }) {

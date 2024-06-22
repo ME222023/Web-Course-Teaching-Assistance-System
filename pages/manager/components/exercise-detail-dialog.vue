@@ -1,42 +1,49 @@
 <template>
   <div>
     <el-dialog class="!w-3/4 !max-w-200 !min-w-100" v-model="showDialog" title="实验完成情况">
-      <el-empty v-if="!solutions.length" description="暂无数据"></el-empty>
-      <el-table v-else class="w-full" :data="solutions" border>
+      <el-switch v-model="showCompletedOnly" active-text="只显示已提交" />
+      <el-empty v-if="!completionInfo.length" description="暂无数据"></el-empty>
+      <el-table v-else class="w-full" v-loading="loading" :data="completionInfo" border>
         <el-table-column type="expand">
-          <template #default="{ row: solution }">
-            <el-card shadow="never">
-              <div v-if="solution.imageUrls.length" class="flex items-center flex-wrap gap-2">
+          <template #default="{ row: data }">
+            <el-card v-if="data.solution" shadow="never">
+              <div v-if="data.solution.imageUrls.length" class="flex items-center flex-wrap gap-2">
                 <el-image
-                  v-for="(image, key) in solution.imageUrls"
+                  v-for="(image, key) in data.solution.imageUrls"
                   class="w-30 h-30 rounded-xl"
                   fit="cover"
                   :key
                   :src="image"
-                  :preview-src-list="solution.imageUrls"
+                  :preview-src-list="data.solution.imageUrls"
                   :initial-index="key"
                 ></el-image>
               </div>
 
               <monaco-editor
-                v-if="solution.content"
+                v-if="data.solution.content"
                 class="mt-4 h-100"
-                :model-value="solution.content"
-                :lang="solution.language"
+                :model-value="data.solution.content"
+                :lang="data.solution.language"
                 :options="{ readOnly: true, theme: 'vs-dark' }"
               ></monaco-editor>
             </el-card>
           </template>
         </el-table-column>
         <el-table-column label="用户名">
-          <template #default="{ row: solution }">
-            <span>{{ solution.creator.nickname ?? solution.creator.username }}</span>
+          <template #default="{ row: data }">
+            <span>{{ data.user.nickname ?? data.user.username }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="语言" prop="language"></el-table-column>
-        <el-table-column label="提交时间" prop="createdAt">
-          <template #default="{ row: solution }">
-            <span>{{ dayjs(solution.createdAt).format('L LT') }}</span>
+        <el-table-column label="提交状态">
+          <template #default="{ row: data }">
+            <el-tag v-if="data.solution" type="success">已提交</el-tag>
+            <el-tag v-else type="danger">未提交</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="语言" prop="solution.language"></el-table-column>
+        <el-table-column label="提交时间">
+          <template #default="{ row }">
+            <span v-if="row.solution">{{ dayjs(row.solution.createdAt).format('L LT') }}</span>
           </template>
         </el-table-column>
       </el-table>
@@ -45,33 +52,53 @@
 </template>
 
 <script setup lang="ts">
-  import type { Solution, User } from '~/types'
-  import { getUser, listSolution } from '~/util/db'
+  import type { Solution, UserInfo } from '~/types'
+  import { getSolutionByExerciseId, listUser } from '~/util/db'
   import { handleError } from '~/util/error_parser'
   import dayjs from '~/util/dayjs'
 
+  interface ExerciseCompletionInfo {
+    user: UserInfo
+    solution?: Solution
+  }
   const showDialog = ref(false)
-  const solutions = ref<Array<Solution & { creator: User }>>([])
+  const exerciseId = ref(0)
+  const completionInfo = ref<ExerciseCompletionInfo[]>([])
+  const loading = ref(false)
+  const showCompletedOnly = ref(true)
 
   defineExpose({
-    show(exerciseId: number) {
+    show(_exerciseId: number) {
       showDialog.value = true
-      fetchSolutions(exerciseId)
+      exerciseId.value = _exerciseId
+      fetchSolutions()
     },
   })
 
-  async function fetchSolutions(exerciseId: number) {
+  watch(showCompletedOnly, () => {
+    fetchSolutions()
+  })
+
+  async function fetchSolutions() {
     try {
-      solutions.value = []
-      const _solutions = await listSolution({ exerciseId })
+      loading.value = true
+      completionInfo.value = []
+      const users = await listUser({  pageSize: 1000 })
+      const result: ExerciseCompletionInfo[] = []
       await Promise.all(
-        _solutions.map(async (solution) => {
-          const creator = await getUser(solution.creatorId)
-          solutions.value.push({ ...solution, creator })
+        users.users.map(async (user) => {
+          const solution = await getSolutionByExerciseId(exerciseId.value, user.id)
+          result.push({ user, solution })
         }),
       )
+      if (showCompletedOnly.value) {
+        completionInfo.value = result.filter((item) => item.solution)
+      } else {
+        completionInfo.value = result
+      }
     } catch (error) {
       handleError('获取提交记录', error)
     }
+    loading.value = false
   }
 </script>
