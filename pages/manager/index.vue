@@ -7,6 +7,9 @@
       <el-tab-pane label="实验发布" lazy>
         <exp-publish />
       </el-tab-pane>
+      <el-tab-pane label="实验管理" lazy>
+        <exp-management />
+      </el-tab-pane>
       <el-tab-pane label="公告管理" lazy>
         <announcements />
       </el-tab-pane>
@@ -17,6 +20,7 @@
 <script setup lang="ts">
   import Users from './components/users.vue'
   import ExpPublish from './components/exp-publish.vue'
+  import ExpManagement from './components/exp-management.vue'
   import Announcements from './components/announcements.vue'
 
   useHead({
