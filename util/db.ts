@@ -12,16 +12,18 @@ const db = new Dexie('weboj-db') as Dexie & {
   announcements: EntityTable<Announcement, 'id'>
 }
 
-/**
- * 初始化数据库的索引结构。Dexie 只需要初始化索引字段即可，不需要定义表结构（只用设置 TypeScript 类型，在上面）。
- * https://dexie.org/docs/Version/Version.stores()#indexable-types
- */
-db.version(1).stores({
-  users: '++id, username, nickname, isDeleted, role, [id+isDeleted], isDisabled',
-  exercises: '++id, title, creatorId, createdAt, updatedAt, isPublished, isDeleted',
-  solutions: '++id, exerciseId, creatorId, content, language, createdAt, imageUrls, status',
-  announcements: '++id, creatorId, createdAt, isDeleted, title',
-})
+export function initDatabase() {
+  /**
+   * 初始化数据库的索引结构。Dexie 只需要初始化索引字段即可，不需要定义表结构（只用设置 TypeScript 类型，在上面）。
+   * https://dexie.org/docs/Version/Version.stores()#indexable-types
+   */
+  db.version(1).stores({
+    users: '++id, username, nickname, isDeleted, role, [id+isDeleted], isDisabled',
+    exercises: '++id, title, creatorId, createdAt, updatedAt, isPublished, isDeleted',
+    solutions: '++id, exerciseId, creatorId, content, language, createdAt, imageUrls, status',
+    announcements: '++id, creatorId, createdAt, isDeleted, title',
+  })
+}
 
 export async function login(username: string, password: string) {
   const userStore = useUserStore()
