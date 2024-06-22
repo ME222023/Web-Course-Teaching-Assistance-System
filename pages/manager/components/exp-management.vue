@@ -27,7 +27,7 @@
           <el-button @click="exerciseDetailDialogRef?.show(row.id)"> 学生提交情况 </el-button>
           <el-button type="primary" @click="onClickEditExercise(row)">编辑</el-button>
           <el-button type="danger" @click="showDeleteDialog(row.id)">删除</el-button>
-          <el-button type="primary" @click="onClickwdExercise(row.id)">撤销</el-button>
+          <el-button type="primary" @click="onClickwdExercise(row.id)">撤回</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -40,12 +40,8 @@
         @reset="onResetEditExercise"
       />
       <template #footer>
-<<<<<<< HEAD
         <el-button
           @click="editExerciseId = undefined; showEditExerciseDialog = false">取消</el-button>
-=======
-        <el-button @click="onCancelEditExercise()"> 取消 </el-button>
->>>>>>> 7fe48fe5dda82e4c7cc39aa1607f6aedd52220a9
         <el-button type="primary" @click="onSubmitEditExercise">确定</el-button>
       </template>
     </el-dialog>
@@ -112,7 +108,6 @@
 
   const fetchExercises = async () => {
     try {
-      exercises.value = []
       const _exercises = await listExercises()
       await Promise.all(
         _exercises.map(async (exercise) => {
@@ -142,11 +137,6 @@
         showDeleteDialogVisible.value = false
       }
     }
-  }
-
-  const onCancelEditExercise = () => {
-    editExerciseId.value = undefined
-    showEditExerciseDialog.value = false
   }
 
   const onSubmitEditExercise = async () => {
