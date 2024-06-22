@@ -10,7 +10,6 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column prop="latestSolution.status" label="题目状态" width="120" />
       <el-table-column fixed="right" label="操作" width="120">
         <template #default="scope">
           <el-button
@@ -42,12 +41,13 @@
         <p style="font-size: 15px">{{ exercise.content }}</p>
         <div v-if="exercise.images?.length">
           <p>图片:</p>
-          <img
+          <el-image
             v-for="(url, index) in exercise.images"
+            class="w-70% max-w-160 h-auto"
             :key="index"
             :src="url"
-            width="70%"
-            height="auto"
+            :preview-src-list="exercise.images"
+            :initial-index="index"
           />
         </div>
         <div v-if="exercise.audios?.length">
@@ -90,12 +90,12 @@
         ></monaco-editor>
         <div v-if="solution.imageUrls.length">
           <p>图片回答:</p>
-          <img
+          <el-image
             v-for="(url, index) in solution.imageUrls"
+            class="w-70% max-w-160 h-auto"
             :key="index"
             :src="url"
-            width="100%"
-            height="auto"
+            :preview-src-list="solution.imageUrls"
           />
         </div>
         <!-- <img v-if="solution.imageUrls" :src="solution.imageUrls" width="400px", height="250px"> -->

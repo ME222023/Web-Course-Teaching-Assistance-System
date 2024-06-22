@@ -91,6 +91,7 @@
             list-type="picture"
             :on-error="handleError"
             :on-success="onFileChange"
+            accept="image/*"
           >
             <el-icon class="el-icon--upload"><upload-filled /></el-icon>
             <div class="el-upload__text"> Drop file here or <em>click to upload</em> </div>
@@ -113,7 +114,7 @@
   import { ref, onMounted } from 'vue'
   import { useRoute } from 'vue-router'
   import { ElMessage, type UploadFile, type UploadFiles, type UploadProps } from 'element-plus'
-  import { getExerciseById, listExercises, addSolution } from '~/util/db'
+  import { isSubmitted, getExerciseById, listExercises, addSolution } from '~/util/db'
   import type { Exercise, Solution } from '~/types'
   import { SolutionStatus } from '~/types'
   import { UploadFilled } from '@element-plus/icons-vue'
@@ -190,15 +191,20 @@
     })
   }
 
-  function submit() {
+  async function submit() {
     if (!userStore.userInfo) {
       ElMessage.error('请先登录')
+      return
+    }
+    //提交过的不能再提交
+    if (await isSubmitted(Number(route.query.id), userStore.userInfo.id)) {
+      ElMessage.error('已提交过答案')
       return
     }
     solution.value.exerciseId = Number(route.query.id)
     solution.value.imageUrls = base64
     solution.value.creatorId = userStore.userInfo.id
-    if (!solution.value.content || !solution.value.imageUrls) {
+    if (!solution.value.content && !solution.value.imageUrls.length) {
       ElMessage.error('答案不能为空')
       return
     }
@@ -217,6 +223,7 @@
     // addSolution(solution.value)
     // console.log('提交的Solution对象:', solution.value)
   }
+
   function handleError() {
     ElMessage.error('图片异常，请更换图片')
   }

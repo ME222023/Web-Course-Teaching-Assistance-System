@@ -227,6 +227,14 @@ export async function listSolution(userId?: number) {
   return query.toArray()
 }
 
+export async function isSubmitted(exerciseId: number, userId: number) {
+  const solution = await db.solutions.where({ exerciseId, creatorId: userId }).first()
+  if (solution){
+    return true
+  }
+  return false
+}
+
 export async function addAnnouncement(data: Omit<Announcement, 'id' | 'createdAt' | 'isDeleted'>) {
   await db.announcements.add({ ...data, createdAt: Date.now(), isDeleted: 0 })
 }

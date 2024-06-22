@@ -79,10 +79,27 @@
   })
   const loading = ref(false)
   const rules: FormRules<Form> = {
-    username: [{ required: true, message: '请输入用户名', trigger: 'change' }],
+    username: [
+      { required: true, message: '请输入用户名', trigger: 'change' },
+      { message: '用户名长度必须为 11 位数字', trigger: 'change', pattern: /^\d{11}$/ },
+    ],
     password: [
       { required: true, message: '请输入密码', trigger: 'change' },
       { min: 6, message: '密码长度不能小于 6 位', trigger: 'change' },
+      {
+        validator: (_, value, callback) => {
+          const containsLetter = /[a-zA-Z]/.test(value);
+          const containsNumber = /[0-9]/.test(value);
+          const containsSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(value);
+          const isValid = [containsLetter, containsNumber, containsSpecialChar].filter(Boolean).length >= 2;
+          if (!isValid) {
+            callback('密码必须包含字母、数字和特殊字符其中两种');
+          } else {
+            callback();
+          }
+        },
+        trigger: 'change',
+      },
     ],
     confirmPassword: [
       { required: true, message: '请再次输入密码', trigger: 'change' },
