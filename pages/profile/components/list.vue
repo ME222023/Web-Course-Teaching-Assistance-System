@@ -43,6 +43,12 @@
       </el-text>
       <h2>你的答案:</h2>
       <el-text v-if="solution" margin-top="20px">
+        <p>
+          语言：{{
+            EL_SELECT_MONACO_LANGUAGES.find((l) => l.value === solution?.language)?.label ??
+            solution.language
+          }}
+        </p>
         <monaco-editor
           class="w-full h-100"
           :model-value="solution.content"
@@ -69,6 +75,7 @@
 
 <script lang="ts" setup>
   import dayjs from 'dayjs'
+  import { EL_SELECT_MONACO_LANGUAGES } from '~/constants'
   import type { Exercise, Solution } from '~/types'
   import { getSolutionById, listExercise, listSolution } from '~/util/db'
 
