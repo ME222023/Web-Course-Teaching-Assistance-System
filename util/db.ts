@@ -214,6 +214,14 @@ export async function getSolutionById(solutionId: number) {
   return db.solutions.where({ id: solutionId }).first()
 }
 
+export async function getSolutionByExerciseId(exerciseId: number, creatorId?: number) {
+  const filter: Partial<Solution> = { exerciseId, isDeleted: 0 }
+  if (creatorId) {
+    filter.creatorId = creatorId
+  }
+  return db.solutions.where(filter).first()
+}
+
 export async function listSolution(filter?: { userId?: number; exerciseId?: number }) {
   const query = db.solutions.where({ isDeleted: 0 })
 
@@ -231,7 +239,7 @@ export async function listSolution(filter?: { userId?: number; exerciseId?: numb
 
 export async function isSubmitted(exerciseId: number, userId: number) {
   const solution = await db.solutions.where({ exerciseId, creatorId: userId }).first()
-  if (solution){
+  if (solution) {
     return true
   }
   return false
