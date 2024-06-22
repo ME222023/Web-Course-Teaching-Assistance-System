@@ -20,11 +20,39 @@
           <h2>{{ exercise.title }}</h2>
           <span class="ml-auto">ID: {{ exercise.id }}</span>
         </div>
-
         <el-text v-if="exercise" class="w-full" margin-top="20px">
           <p class="whitespace-break-spaces">{{ exercise.content }}</p>
-          <div v-if="exercise.media">
-            <img v-for="(url, index) in exercise.media" :key="index" :src="url.url" width="100%" height="auto" />
+          <div v-if="exercise.images">
+            <p>图片:</p>
+            <img
+              v-for="(url, index) in exercise.images"
+              :key="index"
+              :src="url"
+              width="70%"
+              height="auto"
+            />
+          </div>
+          <div v-if="exercise.audios">
+            <p>音频:</p>
+            <audio
+              v-for="(url, index) in exercise.audios"
+              :key="index"
+              :src="url"
+              width="70%"
+              height="auto"
+              controls
+            ></audio>
+          </div>
+          <div v-if="exercise.videos">
+            <p>视频:</p>
+            <video
+              v-for="(url, index) in exercise.videos"
+              :key="index"
+              :src="url"
+              width="30%"
+              height="auto"
+              controls
+            ></video>
           </div>
           <el-card shadow="never">
             <el-form class="!flex !items-center" label-position="left">
