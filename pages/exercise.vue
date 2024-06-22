@@ -23,6 +23,9 @@
 
         <el-text v-if="exercise" class="w-full" margin-top="20px">
           <p class="whitespace-break-spaces">{{ exercise.content }}</p>
+          <div v-if="exercise.media">
+            <img v-for="(url, index) in exercise.media" :key="index" :src="url.url" width="100%" height="auto" />
+          </div>
           <el-card shadow="never">
             <el-form class="!flex !items-center" label-position="left">
               <el-form-item label="编辑器主题">

@@ -56,6 +56,7 @@
           :options="{ theme: 'vs-dark', readOnly: true }"
         ></monaco-editor>
         <div v-if="solution.imageUrls">
+          <p>图片回答:</p>
           <img
             v-for="(url, index) in solution.imageUrls"
             :key="index"
@@ -118,6 +119,7 @@
     drawer.value = true
     exercise.value = data
     solution.value = data.latestSolution
+    console.log(solution.value?.imageUrls)
     // solution.value = await getSolutionById(Number(data.latestSolution?.id))
   }
 
