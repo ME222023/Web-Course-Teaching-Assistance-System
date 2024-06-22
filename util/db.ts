@@ -27,6 +27,7 @@ export async function login(username: string, password: string) {
   const userStore = useUserStore()
   const now = dayjs()
 
+  // 连续失败 5 次，5 分钟内禁止登录
   const failRecords = userStore.loginFailRecords.filter((r) => r.username === username)
   const last5FailRecords = failRecords.slice(-5)
 
@@ -214,12 +215,6 @@ export async function getSolutionById(solutionId: number) {
   return db.solutions.where({ id: solutionId }).first()
 }
 
-/** TODO: 查询题目列表，参数待定 */
-export async function listExercise() {
-  initDatabase()
-  return db.exercises.where({ isDeleted: 0 }).toArray()
-}
-
 export async function listSolution(userId?: number) {
   let query = db.solutions
 
@@ -262,11 +257,14 @@ export async function deleteExercises(id: number) {
   if (!flag) throw new Error('此实验不存在')
 }
 
-export async function listExercises(filter?: { keyword?: string }) {
+export async function listExercises(filter?: { keyword?: string; isPublished?: boolean }) {
   const query = db.exercises.where({ isDeleted: 0 })
 
-  if (filter?.keyword) {
-    query.and((a) => a.title.includes(filter.keyword!))
+  if (filter) {
+    if (filter.keyword) query.and((a) => a.title.includes(filter.keyword!))
+    if (filter.isPublished !== undefined) {
+      query.and((a) => a.isPublished === Number(filter.isPublished))
+    }
   }
 
   return query.toArray()

@@ -113,7 +113,7 @@
   import { ref, onMounted } from 'vue'
   import { useRoute } from 'vue-router'
   import { ElMessage, type UploadFile, type UploadFiles, type UploadProps } from 'element-plus'
-  import { getExerciseById, listExercise, addSolution } from '~/util/db'
+  import { getExerciseById, listExercises, addSolution } from '~/util/db'
   import type { Exercise, Solution } from '~/types'
   import { SolutionStatus } from '~/types'
   import { UploadFilled } from '@element-plus/icons-vue'
@@ -144,7 +144,7 @@
   const editorTheme = ref('vs-dark')
 
   onMounted(async () => {
-    allexercises.value = await listExercise()
+    allexercises.value = await listExercises({ isPublished: true })
     watch(
       () => route.query.id,
       async (exerciseId) => {

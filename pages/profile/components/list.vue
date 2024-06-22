@@ -111,7 +111,7 @@
   import dayjs from 'dayjs'
   import { EL_SELECT_MONACO_LANGUAGES } from '~/constants'
   import type { Exercise, Solution } from '~/types'
-  import { getSolutionById, listExercise, listSolution } from '~/util/db'
+  import { listExercises, listSolution } from '~/util/db'
 
   const drawer = ref(false)
   const exercise = ref<Exercise>()
@@ -130,7 +130,7 @@
       combinedData.value = []
       // console.log(combinedData.value)
       if (!userStore.userInfo?.id) return
-      const exercises = await listExercise()
+      const exercises = await listExercises({ isPublished: true })
       const solutions = await listSolution(userStore.userInfo.id)
       console.log(solutions)
       combinedData.value = exercises.map((exercise) => {

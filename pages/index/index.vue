@@ -6,7 +6,12 @@
           <template #header>
             <div class="flex items-center">
               <div>最新题目</div>
-              <el-button class="ml-auto" :icon="ElIconRight" size="small" @click="onClickExercise()">
+              <el-button
+                class="ml-auto"
+                :icon="ElIconRight"
+                size="small"
+                @click="onClickExercise()"
+              >
                 查看更多
               </el-button>
             </div>
@@ -68,7 +73,7 @@
 
 <script setup lang="ts">
   import type { Announcement, Exercise } from '~/types'
-  import { listAnnouncement, listExercise } from '~/util/db'
+  import { listAnnouncement, listExercises } from '~/util/db'
   import { handleError } from '~/util/error_parser'
   import dayjs from '~/util/dayjs'
   import AnnouncementInfoDialog from '~/components/announcement-info-dialog.vue'
@@ -87,7 +92,7 @@
   }
 
   async function fetchExercises() {
-    exercises.value = await listExercise()
+    exercises.value = await listExercises({ isPublished: true })
   }
 
   async function fetchAnnouncements() {
