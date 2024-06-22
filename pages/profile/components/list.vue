@@ -2,9 +2,10 @@
   <div class="flex flex-col ml-6 mt-2 min-w-120 w-full max-w-400">
     <el-input
       v-model="input"
-      style="max-width: 550px"
+      style="max-width: 550px; padding: 10px"
       placeholder="输入要搜索的题目标题"
       class="input-with-select"
+      @keyup.enter="searchToResult"
     >
       <template #append>
         <el-button :icon="Search" @click="searchToResult" />
@@ -86,20 +87,22 @@
 
       <h2>你的答案:</h2>
       <el-text v-if="solution" margin-top="20px">
-        <p>
-          语言：{{
-            EL_SELECT_MONACO_LANGUAGES.find((l) => l.value === solution?.language)?.label ??
-            solution.language
-          }}
-        </p>
-        <monaco-editor
-          class="w-full h-100"
-          :model-value="solution.content"
-          :lang="solution.language"
-          :options="{ theme: 'vs-dark', readOnly: true }"
-        ></monaco-editor>
+        <div v-if="solution.content">
+          <p>
+            语言：{{
+              EL_SELECT_MONACO_LANGUAGES.find((l) => l.value === solution?.language)?.label ??
+              solution.language
+            }}
+          </p>
+          <monaco-editor
+            class="w-full h-100"
+            :model-value="solution.content"
+            :lang="solution.language"
+            :options="{ theme: 'vs-dark', readOnly: true }"
+          ></monaco-editor>
+        </div>
         <div v-if="solution.imageUrls.length">
-          <p>图片回答:</p>
+          <p>图片:</p>
           <el-image
             v-for="(url, index) in solution.imageUrls"
             class="w-70% max-w-160 h-auto"
@@ -144,7 +147,7 @@
       // console.log(combinedData.value)
       if (!userStore.userInfo?.id) return
       const exercises = await listExercises({ isPublished: true })
-      const solutions = await listSolution(userStore.userInfo.id)
+      const solutions = await listSolution({userId: userStore.userInfo.id})
       console.log(solutions)
       combinedData.value = exercises.map((exercise) => {
         const solution = solutions

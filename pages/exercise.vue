@@ -1,6 +1,17 @@
 <template>
   <div class="flex" style="height: calc(100vh - 80px)">
     <el-col class="!overflow-auto" :span="5">
+      <el-input
+        v-model="input"
+        style="max-width: 550px; padding: 10px"
+        placeholder="输入要搜索的题目标题"
+        class="input-with-select"
+        @keyup.enter="searchExercise"
+      >
+        <template #append>
+          <el-button :icon="Search" @click="searchExercise" />
+        </template>
+      </el-input>
       <div class="flex flex-col">
         <el-button
           v-for="exercise in allexercises"
@@ -123,12 +134,14 @@
   import type MonacoEditor from 'nuxt-monaco-editor/dist/runtime/MonacoEditor.client.vue'
   import { MonacoPlaceholderContentWidget } from '~/util/monaco-editor'
   import { EL_SELECT_MONACO_LANGUAGES, EL_SELECT_MONACO_THEMES } from '~/constants'
+  import { Search } from '@element-plus/icons-vue'
 
   const userStore = useUserStore()
   const route = useRoute()
   const router = useRouter()
   const exercise = ref<Exercise>()
   const allexercises = ref<Exercise[]>([])
+  const input = ref('')
   let base64: string[] = []
 
   const solution = ref<Solution>({
@@ -140,6 +153,7 @@
     createdAt: Date.now(),
     imageUrls: [],
     status: SolutionStatus.Pending,
+    isDeleted: 0,
   })
   const monacoEditorRef = ref<InstanceType<typeof MonacoEditor>>()
   const editorTheme = ref('vs-dark')
@@ -226,6 +240,15 @@
 
   function handleError() {
     ElMessage.error('图片异常，请更换图片')
+  }
+
+  async function searchExercise() {
+    allexercises.value = await listExercises({ isPublished: true })
+    if (input.value === '') {
+      allexercises.value = allexercises.value
+      return
+    }
+    allexercises.value = allexercises.value.filter((item) => item.title.includes(input.value))
   }
 </script>
 
