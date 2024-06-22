@@ -2,51 +2,55 @@
   <div class="flex" style="height: calc(100vh - 80px)">
     <el-col class="!overflow-auto" :span="5">
       <el-input
-        v-model="input"
+        v-model="searchKeyword"
         style="max-width: 550px; padding: 10px"
         placeholder="输入要搜索的题目标题"
         class="input-with-select"
-        @keyup.enter="searchExercise"
+        @keyup.enter="fetchExercises"
       >
         <template #append>
-          <el-button :icon="Search" @click="searchExercise" />
+          <el-button :icon="Search" @click="fetchExercises" />
         </template>
       </el-input>
       <div class="flex flex-col">
-        <el-button
-          v-for="exercise in allexercises"
-          class="!justify-start !ml-0"
-          :key="exercise.id"
-          text
-          @click="changeExercise(exercise.id)"
-        >
-          {{ exercise.id }}. {{ exercise.title }}
-        </el-button>
+        <div v-for="exercise in exercises" class="flex items-center w-full" :key="exercise.id">
+          <el-button class="!justify-start !ml-0 !grow" text @click="changeExercise(exercise.id)">
+            {{ exercise.id }}. {{ exercise.title }}
+          </el-button>
+          <el-tooltip v-if="exercise.solution" content="已提交" placement="right">
+            <el-icon>
+              <el-icon-circle-check-filled
+                v-if="exercise.solution"
+                class="text-green font-bold text-20"
+              />
+            </el-icon>
+          </el-tooltip>
+        </div>
       </div>
     </el-col>
     <el-col class="!overflow-y-auto px-10" :span="19">
-      <div v-if="exercise" class="flex flex-col">
+      <div v-if="selectedExercise" class="flex flex-col">
         <div class="flex items-center">
-          <h2>{{ exercise.title }}</h2>
-          <span class="ml-auto">ID: {{ exercise.id }}</span>
+          <h2>{{ selectedExercise.title }}</h2>
+          <span class="ml-auto">ID: {{ selectedExercise.id }}</span>
         </div>
-        <el-text v-if="exercise" class="w-full" margin-top="20px">
-          <p class="whitespace-break-spaces">{{ exercise.content }}</p>
-          <div class="flex flex-col gap-y-2" v-if="exercise.images?.length">
+        <el-text v-if="selectedExercise" class="w-full" margin-top="20px">
+          <p class="whitespace-break-spaces">{{ selectedExercise.content }}</p>
+          <div class="flex flex-col gap-y-2" v-if="selectedExercise.images?.length">
             <p>图片:</p>
             <el-image
-              v-for="(url, index) in exercise.images"
+              v-for="(url, index) in selectedExercise.images"
               class="w-70% max-w-160 h-auto"
               :key="index"
               :src="url"
-              :preview-src-list="exercise.images"
+              :preview-src-list="selectedExercise.images"
               :initial-index="index"
             />
           </div>
-          <div v-if="exercise.audios?.length">
+          <div v-if="selectedExercise.audios?.length">
             <p>音频:</p>
             <audio
-              v-for="(url, index) in exercise.audios"
+              v-for="(url, index) in selectedExercise.audios"
               :key="index"
               :src="url"
               width="70%"
@@ -54,10 +58,10 @@
               controls
             ></audio>
           </div>
-          <div v-if="exercise.videos?.length">
+          <div v-if="selectedExercise.videos?.length">
             <p>视频:</p>
             <video
-              v-for="(url, index) in exercise.videos"
+              v-for="(url, index) in selectedExercise.videos"
               :key="index"
               :src="url"
               width="30%"
@@ -97,17 +101,18 @@
             drag
             action="#"
             multiple
-            :on-preview="handlePreview"
             :on-remove="handleRemove"
             list-type="picture"
-            :on-error="handleError"
+            :on-error="onUploadFileError"
             :on-success="onFileChange"
             accept="image/*"
           >
             <el-icon class="el-icon--upload"><upload-filled /></el-icon>
             <div class="el-upload__text"> Drop file here or <em>click to upload</em> </div>
           </el-upload>
-          <el-button type="primary" @click="submit">提交</el-button>
+          <el-button type="primary" :disabled="!!selectedExercise.solution" @click="submit">
+            {{ selectedExercise.solution ? '已提交过答案' : '提交' }}
+          </el-button>
         </el-text>
       </div>
 
@@ -125,7 +130,13 @@
   import { ref, onMounted } from 'vue'
   import { useRoute } from 'vue-router'
   import { ElMessage, type UploadFile, type UploadFiles, type UploadProps } from 'element-plus'
-  import { isSubmitted, getExerciseById, listExercises, addSolution } from '~/util/db'
+  import {
+    isSubmitted,
+    getExerciseById,
+    listExercises,
+    addSolution,
+    getSolutionByExerciseId,
+  } from '~/util/db'
   import type { Exercise, Solution } from '~/types'
   import { SolutionStatus } from '~/types'
   import { UploadFilled } from '@element-plus/icons-vue'
@@ -135,13 +146,18 @@
   import { MonacoPlaceholderContentWidget } from '~/util/monaco-editor'
   import { EL_SELECT_MONACO_LANGUAGES, EL_SELECT_MONACO_THEMES } from '~/constants'
   import { Search } from '@element-plus/icons-vue'
+  import { handleError } from '~/util/error_parser'
+
+  interface ExerciseWithSolution extends Exercise {
+    solution?: Solution
+  }
 
   const userStore = useUserStore()
   const route = useRoute()
   const router = useRouter()
-  const exercise = ref<Exercise>()
-  const allexercises = ref<Exercise[]>([])
-  const input = ref('')
+  const selectedExercise = ref<ExerciseWithSolution>()
+  const exercises = ref<ExerciseWithSolution[]>([])
+  const searchKeyword = ref('')
   let base64: string[] = []
 
   const solution = ref<Solution>({
@@ -159,18 +175,21 @@
   const editorTheme = ref('vs-dark')
 
   onMounted(async () => {
-    allexercises.value = await listExercises({ isPublished: true })
+    fetchExercises()
     watch(
       () => route.query.id,
       async (exerciseId) => {
         if (!exerciseId) return
-        exercise.value = await getExerciseById(Number(exerciseId))
-        if (!exercise.value) {
-          ElMessage.error('Exercise not found')
+        const _exerciseId = Number(exerciseId)
+        selectedExercise.value = await getExerciseById(_exerciseId)
+        if (!selectedExercise.value) {
+          return ElMessage.error('Exercise not found')
         }
+        selectedExercise.value.solution = await getSolutionByExerciseId(_exerciseId)
       },
       { immediate: true },
     )
+    // 编辑器加载成功后，添加 placeholder 提示
     const stopWatchEditor = watchEffect(() => {
       if (!monacoEditorRef.value?.$editor) return
       new MonacoPlaceholderContentWidget('在此输入答案', monacoEditorRef.value.$editor)
@@ -180,11 +199,7 @@
 
   const onFileChange = async (_: any, uploadFile: UploadFile, uploadFiles: UploadFiles) => {
     try {
-      const base64Strings = await convertFileToBase64(uploadFiles)
-      base64Strings.forEach((base64) => {
-        console.log(base64)
-      })
-      base64 = base64Strings
+      base64 = await convertFileToBase64(uploadFiles)
     } catch (error) {
       ElMessage.error('文件处理出错: ' + error)
     }
@@ -192,10 +207,6 @@
 
   const handleRemove: UploadProps['onRemove'] = (uploadFile, uploadFiles) => {
     console.log(uploadFile, uploadFiles)
-  }
-
-  const handlePreview: UploadProps['onPreview'] = (file) => {
-    console.log(file)
   }
 
   function changeExercise(id: number) {
@@ -225,30 +236,31 @@
     try {
       const solutionClone = JSON.parse(JSON.stringify(solution.value))
 
-      console.log('提交的 Solution 对象:', solutionClone)
-
-      addSolution(solutionClone)
+      await addSolution(solutionClone)
       ElMessage.success('提交成功')
+      router.replace('/profile')
     } catch (error) {
-      console.error('克隆 Solution 对象失败:', error)
-      ElMessage.error('提交失败: ' + error)
+      handleError('提交', error)
     }
-    router.replace('/profile')
-    // addSolution(solution.value)
-    // console.log('提交的Solution对象:', solution.value)
   }
 
-  function handleError() {
+  function onUploadFileError() {
     ElMessage.error('图片异常，请更换图片')
   }
 
-  async function searchExercise() {
-    allexercises.value = await listExercises({ isPublished: true })
-    if (input.value === '') {
-      allexercises.value = allexercises.value
-      return
+  async function fetchExercises() {
+    try {
+      exercises.value = await listExercises({ keyword: searchKeyword.value, isPublished: true })
+      exercises.value.forEach(async (exercise) => {
+        try {
+          exercise.solution = await getSolutionByExerciseId(exercise.id)
+        } catch (error) {
+          handleError(`获取题目 ${exercise.id} 答案`, error)
+        }
+      })
+    } catch (error) {
+      handleError('获取实验列表', error)
     }
-    allexercises.value = allexercises.value.filter((item) => item.title.includes(input.value))
   }
 </script>
 
