@@ -38,6 +38,7 @@ export class MonacoPlaceholderContentWidget implements monaco.editor.IContentWid
       this.domNode.style.pointerEvents = 'none'
       this.domNode.textContent = this.placeholder
       this.domNode.style.fontStyle = 'italic'
+      this.domNode.style.opacity = '0.5'
       this.editor.applyFontInfo(this.domNode)
     }
 
