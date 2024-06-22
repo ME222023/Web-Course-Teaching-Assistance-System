@@ -50,7 +50,6 @@
             <el-form-item label="上传音频">
               <el-upload
                 action="#"
-                list-type="picture"
                 multiple
                 accept="audio/mp3,audio/wav"
                 v-model:file-list="audioFileList"
@@ -68,7 +67,6 @@
             <el-form-item label="上传视频">
               <el-upload
                 action="#"
-                list-type="picture"
                 multiple
                 accept="video/mp4"
                 v-model:file-list="videoFileList"
