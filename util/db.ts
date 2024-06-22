@@ -214,14 +214,6 @@ export async function getSolutionById(solutionId: number) {
   return db.solutions.where({ id: solutionId }).first()
 }
 
-export async function getSolutionByExerciseId(exerciseId: number, creatorId?: number) {
-  const filter: Partial<Solution> = { exerciseId, isDeleted: 0 }
-  if (creatorId) {
-    filter.creatorId = creatorId
-  }
-  return db.solutions.where(filter).first()
-}
-
 export async function listSolution(filter?: { userId?: number; exerciseId?: number }) {
   const query = db.solutions.where({ isDeleted: 0 })
 
@@ -237,9 +229,17 @@ export async function listSolution(filter?: { userId?: number; exerciseId?: numb
   return query.toArray()
 }
 
+export async function getSolutionByExerciseId(exerciseId: number, creatorId?: number) {
+  const filter: Partial<Solution> = { exerciseId, isDeleted: 0 }
+  if (creatorId) {
+    filter.creatorId = creatorId
+  }
+  return db.solutions.where(filter).first()
+}
+
 export async function isSubmitted(exerciseId: number, userId: number) {
   const solution = await db.solutions.where({ exerciseId, creatorId: userId }).first()
-  if (solution) {
+  if (solution){
     return true
   }
   return false
@@ -269,12 +269,19 @@ export async function deleteAnnouncement(id: number) {
 }
 
 export async function editExercises(data: Partial<Omit<Exercise, 'id'>> & { id: number }) {
-  return db.exercises.update(data.id, data)
+  // 深度克隆数据，移除不可克隆的对象
+  const cleanData = JSON.parse(JSON.stringify(data));
+  console.dir(cleanData);
+  return db.exercises.update(cleanData.id, cleanData);
 }
 
 export async function deleteExercises(id: number) {
   const flag = await db.exercises.where({ id, isDeleted: 0 }).modify({ isDeleted: 1 })
   if (!flag) throw new Error('此实验不存在')
+}
+
+export async function withdrawExercises(id: number) {
+  const flag = await db.exercises.where({ id, isPublished: 1 }).modify({ isPublished: 0 })
 }
 
 export async function listExercises(filter?: { keyword?: string; isPublished?: boolean }) {
@@ -286,7 +293,7 @@ export async function listExercises(filter?: { keyword?: string; isPublished?: b
       query.and((a) => a.isPublished === Number(filter.isPublished))
     }
   }
-
+  
   return query.toArray()
 }
 
