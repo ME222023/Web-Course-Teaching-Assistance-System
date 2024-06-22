@@ -39,7 +39,7 @@
         @reset="onResetEditExercise"
       />
       <template #footer>
-        <el-button @click="editExerciseId = undefined; showEditExerciseDialog = false">取消</el-button>
+        <el-button @click="onCancelEditExercise()"> 取消 </el-button>
         <el-button type="primary" @click="onSubmitEditExercise">确定</el-button>
       </template>
     </el-dialog>
@@ -76,9 +76,9 @@
   const editExerciseForm = ref({
     title: '',
     content: '',
-    images: [] as string[], 
-    audios: [] as string[], 
-    videos: [] as string[], 
+    images: [] as string[],
+    audios: [] as string[],
+    videos: [] as string[],
   })
 
   const exerciseDetailDialogRef = ref<InstanceType<typeof ExerciseDetailDialog>>()
@@ -100,6 +100,7 @@
 
   const fetchExercises = async () => {
     try {
+      exercises.value = []
       const _exercises = await listExercises()
       await Promise.all(
         _exercises.map(async (exercise) => {
@@ -129,6 +130,11 @@
         showDeleteDialogVisible.value = false
       }
     }
+  }
+
+  const onCancelEditExercise = () => {
+    editExerciseId.value = undefined
+    showEditExerciseDialog.value = false
   }
 
   const onSubmitEditExercise = async () => {
