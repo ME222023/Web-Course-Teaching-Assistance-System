@@ -15,10 +15,7 @@
               prop="title"
               :rules="[{ required: true, message: '请输入实验名称', trigger: 'blur' }]"
             >
-              <el-input
-                v-model="form.title"
-                placeholder="请输入实验名称"
-              ></el-input>
+              <el-input v-model="form.title" placeholder="请输入实验名称"></el-input>
             </el-form-item>
             <el-form-item
               label="实验描述"
@@ -73,7 +70,7 @@
                 action="#"
                 list-type="picture"
                 multiple
-                accept="video/*"
+                accept="video/mp4"
                 v-model:file-list="videoFileList"
                 :on-success="handleVideoUpload"
                 :on-remove="handleRemove('videos')"

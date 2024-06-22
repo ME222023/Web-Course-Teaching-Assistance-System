@@ -125,10 +125,6 @@
     editExerciseId.value = exercise.id
     editExerciseForm.value = { title: exercise.title, content: exercise.content }
   }
-
-  const formatDate = (date: string | number | Date) => {
-    return dayjs(date).format('YYYY-MM-DD HH:mm:ss')
-  }
 </script>
 
 <style scoped>

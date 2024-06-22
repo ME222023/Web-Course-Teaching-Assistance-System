@@ -1,4 +1,4 @@
-import type { UploadFiles } from "element-plus"
+import type { UploadFiles } from 'element-plus'
 
 interface SelectImageOptions {
   /** 限制图片大小，单位 MB */
@@ -34,19 +34,24 @@ export async function selectImage(options?: SelectImageOptions) {
 
 export async function convertFileToBase64(uploadFiles: UploadFiles): Promise<string[]> {
   return new Promise((resolve, reject) => {
-    const files = Array.from(uploadFiles);
-    const promises = files.map(file => new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        resolve(reader.result as string);
-      };
-      reader.onerror = (error) => {
-        reject(error);
-      };
-      reader.readAsDataURL(file.raw!);
-    }));
-    Promise.all(promises)
-      .then(resolve)
-      .catch(reject);
-  });
+    const files = Array.from(uploadFiles)
+    const promises = files.map(
+      (file) =>
+        new Promise<string>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = () => {
+            resolve(reader.result as string)
+          }
+          reader.onerror = (error) => {
+            reject(error)
+          }
+          reader.readAsDataURL(file.raw!)
+        }),
+    )
+    Promise.all(promises).then(resolve).catch(reject)
+  })
+}
+
+export function createObjectURL(file: Blob): string {
+  return URL.createObjectURL(file)
 }
