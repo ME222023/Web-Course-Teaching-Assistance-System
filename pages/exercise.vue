@@ -17,10 +17,10 @@
           <el-button class="!justify-start !ml-0 !grow" text @click="changeExercise(exercise.id)">
             {{ exercise.id }}. {{ exercise.title }}
           </el-button>
-          <el-tooltip v-if="exercise.solution" content="已提交" placement="right">
+          <el-tooltip v-if="exercise.hasSolution" content="已提交" placement="right">
             <el-icon>
               <el-icon-circle-check-filled
-                v-if="exercise.solution"
+                v-if="exercise.hasSolution"
                 class="text-green font-bold text-20"
               />
             </el-icon>
@@ -110,8 +110,8 @@
             <el-icon class="el-icon--upload"><upload-filled /></el-icon>
             <div class="el-upload__text"> Drop file here or <em>click to upload</em> </div>
           </el-upload>
-          <el-button type="primary" :disabled="!!selectedExercise.solution" @click="submit">
-            {{ selectedExercise.solution ? '已提交过答案' : '提交' }}
+          <el-button type="primary" :disabled="selectedExercise.hasSolution" @click="submit">
+            {{ selectedExercise.hasSolution ? '已提交过答案' : '提交' }}
           </el-button>
         </el-text>
       </div>
@@ -149,7 +149,7 @@
   import { handleError } from '~/util/error_parser'
 
   interface ExerciseWithSolution extends Exercise {
-    solution?: Solution
+    hasSolution?: boolean
   }
 
   const userStore = useUserStore()
@@ -185,7 +185,7 @@
         if (!selectedExercise.value) {
           return ElMessage.error('Exercise not found')
         }
-        selectedExercise.value.solution = await getSolutionByExerciseId(_exerciseId)
+        selectedExercise.value.hasSolution = !!(await getSolutionByExerciseId(_exerciseId))
       },
       { immediate: true },
     )
@@ -253,7 +253,7 @@
       exercises.value = await listExercises({ keyword: searchKeyword.value, isPublished: true })
       exercises.value.forEach(async (exercise) => {
         try {
-          exercise.solution = await getSolutionByExerciseId(exercise.id)
+          exercise.hasSolution = !!(await getSolutionByExerciseId(exercise.id))
         } catch (error) {
           handleError(`获取题目 ${exercise.id} 答案`, error)
         }
