@@ -176,23 +176,26 @@
 
   onMounted(async () => {
     const stopWatchUserInfo = watchEffect(() => {
-      if (userStore.userInfo) {
-        nextTick(() => {
-          stopWatchUserInfo()
-          fetchExercises()
-        })
-      }
+      nextTick(() => {
+        stopWatchUserInfo()
+        fetchExercises()
+      })
     })
     watch(
       () => [route.query.id, userStore.userInfo?.id],
       async ([exerciseId, userId]) => {
-        if (!exerciseId || !userId) return
+        if (!exerciseId) return
         const _exerciseId = Number(exerciseId)
         selectedExercise.value = await getExerciseById(_exerciseId)
         if (!selectedExercise.value) {
           return ElMessage.error('Exercise not found')
         }
-        selectedExercise.value.hasSolution = !!(await getSolutionByExerciseId(_exerciseId, userId as number))
+        if (userId) {
+          selectedExercise.value.hasSolution = !!(await getSolutionByExerciseId(
+            _exerciseId,
+            userId as number,
+          ))
+        }
       },
       { immediate: true },
     )
@@ -258,13 +261,18 @@
   async function fetchExercises() {
     try {
       exercises.value = await listExercises({ keyword: searchKeyword.value, isPublished: true })
-      exercises.value.forEach(async (exercise) => {
-        try {
-          exercise.hasSolution = !!(await getSolutionByExerciseId(exercise.id, userStore.userInfo!.id))
-        } catch (error) {
-          handleError(`获取题目 ${exercise.id} 答案`, error)
-        }
-      })
+      if (userStore.userInfo?.id) {
+        exercises.value.forEach(async (exercise) => {
+          try {
+            exercise.hasSolution = !!(await getSolutionByExerciseId(
+              exercise.id,
+              userStore.userInfo!.id,
+            ))
+          } catch (error) {
+            handleError(`获取题目 ${exercise.id} 答案`, error)
+          }
+        })
+      }
     } catch (error) {
       handleError('获取实验列表', error)
     }
