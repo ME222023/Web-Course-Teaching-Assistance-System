@@ -4,6 +4,7 @@
       <h2> 注册 </h2>
       <client-only>
         <el-form
+          ref="formRef"
           :model="form"
           :rules
           label-width="80px"
@@ -52,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-  import type { FormRules } from 'element-plus'
+  import type { FormInstance, FormRules } from 'element-plus'
   import { register } from '~/util/db'
   import { handleError } from '~/util/error_parser'
 
@@ -77,6 +78,7 @@
     password: '',
     confirmPassword: '',
   })
+  const formRef = ref<FormInstance>()
   const loading = ref(false)
   const rules: FormRules<Form> = {
     username: [
@@ -118,9 +120,11 @@
   }
 
   async function onClickRegister() {
-    if (!form.value.username || !form.value.password) {
+    const isValid = await formRef.value?.validate().catch(() => false)
+    if (!isValid) {
       return
     }
+
     try {
       loading.value = true
       const token = await register(form.value.username, form.value.password)
