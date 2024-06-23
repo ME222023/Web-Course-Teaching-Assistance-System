@@ -2,10 +2,10 @@
   <div class="flex" style="height: calc(100vh - 80px)">
     <el-col class="!overflow-auto" :span="5">
       <el-input
+        class="!sticky !top-0 !pt-2 !bg-white z-1"
         v-model="searchKeyword"
         style="max-width: 550px; padding: 10px"
         placeholder="输入要搜索的题目标题"
-        class="input-with-select"
         @keyup.enter="fetchExercises"
       >
         <template #append>
