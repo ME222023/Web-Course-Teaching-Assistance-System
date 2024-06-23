@@ -88,14 +88,15 @@
       { min: 6, message: '密码长度不能小于 6 位', trigger: 'change' },
       {
         validator: (_, value, callback) => {
-          const containsLetter = /[a-zA-Z]/.test(value);
-          const containsNumber = /[0-9]/.test(value);
-          const containsSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(value);
-          const isValid = [containsLetter, containsNumber, containsSpecialChar].filter(Boolean).length >= 2;
+          const containsLetter = /[a-zA-Z]/.test(value)
+          const containsNumber = /[0-9]/.test(value)
+          const containsSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(value)
+          const isValid =
+            [containsLetter, containsNumber, containsSpecialChar].filter(Boolean).length >= 2
           if (!isValid) {
-            callback('密码必须包含字母、数字和特殊字符其中两种');
+            callback('密码必须包含字母、数字和特殊字符其中两种')
           } else {
-            callback();
+            callback()
           }
         },
         trigger: 'change',
