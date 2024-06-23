@@ -42,12 +42,12 @@
     </el-col>
     <!-- 实验详情 -->
     <el-col v-loading="loadingFetchExercise" class="!overflow-y-auto px-10" :span="19">
-      <div v-if="selectedExercise" class="flex flex-col">
+      <div v-if="selectedExercise?.hasSolution !== undefined" class="flex flex-col">
         <div class="flex items-center">
           <h2>{{ selectedExercise.title }}</h2>
           <span class="ml-auto">ID: {{ selectedExercise.id }}</span>
         </div>
-        <el-text v-if="selectedExercise" class="w-full" margin-top="20px">
+        <el-text class="w-full" margin-top="20px">
           <p class="whitespace-break-spaces">{{ selectedExercise.content }}</p>
           <div class="flex flex-col gap-y-2" v-if="selectedExercise.images?.length">
             <p>图片:</p>
@@ -114,7 +114,6 @@
                 drag
                 action="#"
                 multiple
-                :on-remove="handleRemove"
                 list-type="picture"
                 :on-error="onUploadFileError"
                 :on-success="onFileChange"
@@ -198,6 +197,9 @@
   import { Search } from '@element-plus/icons-vue'
   import { handleError } from '~/util/error_parser'
 
+  type ExerciseListValueWithSolution = Pick<Exercise, 'id' | 'title' | 'content'> & {
+    hasSolution?: boolean
+  }
   interface ExerciseWithSolution extends Exercise {
     hasSolution?: boolean
   }
@@ -206,7 +208,7 @@
   const route = useRoute()
   const router = useRouter()
   const selectedExercise = ref<ExerciseWithSolution>()
-  const exercises = ref<ExerciseWithSolution[]>([])
+  const exercises = ref<ExerciseListValueWithSolution[]>([])
   const searchKeyword = ref('')
   let base64: string[] = []
 
@@ -256,10 +258,6 @@
     }
   }
 
-  const handleRemove: UploadProps['onRemove'] = (uploadFile, uploadFiles) => {
-    console.log(uploadFile, uploadFiles)
-  }
-
   function changeExercise(id: number) {
     router.push({
       path: '/exercise',
@@ -277,6 +275,7 @@
       ElMessage.error('已提交过答案')
       return
     }
+    solution.value.createdAt = Date.now()
     solution.value.exerciseId = Number(route.query.id)
     solution.value.imageUrls = base64
     solution.value.creatorId = userStore.userInfo.id
@@ -322,7 +321,9 @@
 
   async function fetchExercises() {
     try {
-      exercises.value = await listExercises({ keyword: searchKeyword.value, isPublished: true })
+      exercises.value = (
+        await listExercises({ keyword: searchKeyword.value, isPublished: true })
+      ).map((exercise) => ({ ...exercise, hasSolution: false }))
       if (userStore.userInfo?.id) {
         exercises.value.forEach(async (exercise) => {
           try {
