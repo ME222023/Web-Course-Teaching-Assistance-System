@@ -81,7 +81,7 @@
   const rules: FormRules<Form> = {
     username: [
       { required: true, message: '请输入用户名', trigger: 'change' },
-      { message: '用户名长度必须为 11 位数字', trigger: 'change', pattern: /^\d{11}$/ },
+      { message: '用户名长度必须为 10 位数字', trigger: 'change', pattern: /^\d{10}$/ },
     ],
     password: [
       { required: true, message: '请输入密码', trigger: 'change' },
