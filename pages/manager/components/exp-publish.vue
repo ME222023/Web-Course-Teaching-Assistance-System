@@ -34,12 +34,13 @@
                 action="#"
                 list-type="picture"
                 multiple
+                accept="image/jpeg,image/png"
                 v-model:file-list="imageFileList"
                 :on-success="handleImageUpload"
                 :on-remove="handleRemove('images')"
                 :before-upload="beforeImageUpload"
               >
-                <el-button type="primary">点击或拖至此处上传</el-button>
+                <el-button type="primary">点击上传</el-button>
               </el-upload>
               <ImageList :imageFileList="imageFileList" />
               <div v-if="uploadInfo.images.success + uploadInfo.images.fail > 0">
@@ -57,7 +58,7 @@
                 :on-remove="handleRemove('audios')"
                 :before-upload="beforeAudioUpload"
               >
-                <el-button type="primary">点击或拖至此处上传</el-button>
+                <el-button type="primary">点击上传</el-button>
               </el-upload>
               <div v-if="uploadInfo.audios.success + uploadInfo.audios.fail > 0">
                 上传成功: {{ uploadInfo.audios.success }} 个音频，上传失败:
@@ -74,7 +75,7 @@
                 :on-remove="handleRemove('videos')"
                 :before-upload="beforeVideoUpload"
               >
-                <el-button type="primary">点击或拖至此处上传</el-button>
+                <el-button type="primary">点击上传</el-button>
               </el-upload>
               <div v-if="videoFileList.length">
                 <video
@@ -155,10 +156,6 @@
 
   // 上传图像的限制
   const beforeImageUpload = (file: File) => {
-    if (!/\.(jpg|jpeg|png|gif)$/i.test(file.name)) {
-      ElMessage.error('只能上传 JPG、PNG、GIF 格式的图片')
-      return false
-    }
     if (file.size > 5 * 1024 * 1024) {
       ElMessage.error('图片文件过大，不能超过5MB')
       uploadInfo.value.images.fail++
@@ -169,10 +166,6 @@
 
   // 上传音频的限制
   const beforeAudioUpload = (file: File) => {
-    if (!/\.(mp3|wav)$/i.test(file.name)) {
-      ElMessage.error('只能上传 MP3、WAV 格式的音频')
-      return false
-    }
     if (file.size > 10 * 1024 * 1024) {
       ElMessage.error('音频文件过大，不能超过10MB')
       uploadInfo.value.audios.fail++
@@ -183,10 +176,6 @@
 
   // 上传视频的限制
   const beforeVideoUpload = (file: File) => {
-    if (!/\.(mp4|mov|avi|wmv)$/i.test(file.name)) {
-      ElMessage.error('只能上传 MP4、MOV、AVI、WMV 格式的视频')
-      return false
-    }
     if (file.size > 100 * 1024 * 1024) {
       ElMessage.error('视频文件过大，不能超过100MB')
       uploadInfo.value.videos.fail++

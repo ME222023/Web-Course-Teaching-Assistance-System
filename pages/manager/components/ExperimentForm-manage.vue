@@ -24,12 +24,13 @@
         action="#"
         list-type="picture"
         multiple
+        accept="image/jpeg,image/png"
         :file-list="imageFileList"
         :on-success="handleImageUpload"
         :on-remove="handleRemove('images')"
         :before-upload="beforeImageUpload"
       >
-        <el-button type="primary">点击或拖至此处上传</el-button>
+        <el-button type="primary">点击上传</el-button>
       </el-upload>
       <div v-if="uploadInfo.images.success + uploadInfo.images.fail > 0">
         上传成功: {{ uploadInfo.images.success }} 张图片，上传失败:
@@ -46,7 +47,7 @@
         :on-remove="handleRemove('audios')"
         :before-upload="beforeAudioUpload"
       >
-        <el-button type="primary">点击或拖至此处上传</el-button>
+        <el-button type="primary">点击上传</el-button>
       </el-upload>
       <div v-if="uploadInfo.audios.success + uploadInfo.audios.fail > 0">
         上传成功: {{ uploadInfo.audios.success }} 个音频，上传失败:
@@ -63,7 +64,7 @@
         :on-remove="handleRemove('videos')"
         :before-upload="beforeVideoUpload"
       >
-        <el-button type="primary">点击或拖至此处上传</el-button>
+        <el-button type="primary">点击上传</el-button>
       </el-upload>
       <div v-if="videoFileList.length">
         <video
@@ -85,21 +86,15 @@
 <script setup lang="ts">
   import { convertFileToBase64 } from '~/util/files'
 
-  const props = defineProps({
+  const props = defineProps<{
     initialForm: {
-      type: Object,
-      required: true,
-      default: () => ({
-        title: '',
-        content: '',
-        images: [] as string[],
-        audios: [] as string[],
-        videos: [] as string[],
-      }),
-    },
-  })
-
-  const emit = defineEmits(['submit', 'reset'])
+      title: string
+      content: string
+      images: string[]
+      audios: string[]
+      videos: string[]
+    }
+  }>()
 
   const form = ref({ ...props.initialForm })
 
@@ -119,16 +114,14 @@
       ) {
         return
       }
-      // 使用类型断言来告诉 TypeScript url 是一个字符串
       imageFileList.value = newForm.images.map(
-        (url: string) => ({ name: '', url }) as { name: string; url: string },
+        (url, i) => ({ name: `图片 ${i + 1}`, url }) as { name: string; url: string },
       )
-
       audioFileList.value = newForm.audios.map(
-        (url: string) => ({ name: '', url }) as { name: string; url: string },
+        (url, i) => ({ name: `音频 ${i + 1}`, url }) as { name: string; url: string },
       )
       videoFileList.value = newForm.videos.map(
-        (url: string) => ({ name: '', url }) as { name: string; url: string },
+        (url, i) => ({ name: `视频 ${i + 1}`, url }) as { name: string; url: string },
       )
     },
     { deep: true, immediate: true },
@@ -141,41 +134,17 @@
   })
 
   const handleImageUpload = async (response: any, file: any) => {
-    // 不直接存储url的信息
-    //imageFileList.value.push({ name: file.name, url: URL.createObjectURL(file.raw) })
-    //uploadInfo.value.images.success += 1
-    // 获取文件名
-    // console.log(file)
-    const fileName = file.name
-    // 添加到文件列表中，只存储文件名
-    let url = await convertFileToBase64([file])
-    props.initialForm.images.push(url)
-    // imageFileList.value.push({ name: fileName, url: fileName })
+    props.initialForm.images.push(...(await convertFileToBase64([file])))
     uploadInfo.value.images.success += 1
   }
 
   const handleAudioUpload = async (response: any, file: any) => {
-    //audioFileList.value.push({ name: file.name, url: URL.createObjectURL(file.raw) })
-    //uploadInfo.value.audios.success += 1
-    // 获取文件名
-    const fileName = file.name
-    // 添加到文件列表中，只存储文件名
-    //audioFileList.value.push({ name: fileName, url: fileName })
-    let url = await convertFileToBase64([file])
-    props.initialForm.audios.push(url)
+    props.initialForm.audios.push(...(await convertFileToBase64([file])))
     uploadInfo.value.audios.success += 1
   }
 
   const handleVideoUpload = async (response: any, file: any) => {
-    //videoFileList.value.push({ name: file.name, url: URL.createObjectURL(file.raw) })
-    //uploadInfo.value.videos.success += 1
-    // 获取文件名
-    const fileName = file.name
-    // 添加到文件列表中，只存储文件名
-    //videoFileList.value.push({ name: fileName, url: fileName })
-    let url = await convertFileToBase64([file])
-    //console.log('handleVideosUpload', url)
-    props.initialForm.videos.push(url)
+    props.initialForm.videos.push(...(await convertFileToBase64([file])))
     uploadInfo.value.videos.success += 1
   }
 
@@ -188,17 +157,12 @@
   }
 
   const beforeImageUpload = (file: File) => {
-    const isJPG = file.type === 'image/jpeg'
-    const isPNG = file.type === 'image/png'
     const isLt2M = file.size / 1024 / 1024 < 2
 
-    if (!isJPG && !isPNG) {
-      ElMessage.error('上传图片只能是 JPG/PNG 格式!')
-    }
     if (!isLt2M) {
       ElMessage.error('上传图片大小不能超过 2MB!')
     }
-    return (isJPG || isPNG) && isLt2M
+    return isLt2M
   }
 
   const beforeAudioUpload = (file: File) => {
