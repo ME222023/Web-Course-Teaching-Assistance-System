@@ -78,8 +78,12 @@ import { handleError } from '~/util/error_parser'
 import ExerciseDetailDialog from './exercise-detail-dialog.vue'
 import ExperimentForm from './ExperimentForm-manage.vue'
 
+interface ExerciseWithCreator extends Exercise {
+  creator: User
+}
+
 const loading = ref(false)
-const exercises = ref<Array<Exercise & { creator: User }>>([])
+const exercises = ref<ExerciseWithCreator[]>([])
 
 const showEditExerciseDialog = ref(false)
 const editExerciseId = ref<number | undefined>()
@@ -112,12 +116,14 @@ const fetchExercises = async () => {
   try {
     exercises.value = []
     const _exercises = await listExercises()
+    const exercisesWithCreator: ExerciseWithCreator[] = []
     await Promise.all(
       _exercises.map(async (exercise) => {
         const creator = await getUser(exercise.creatorId)
-        exercises.value.push({ ...exercise, creator })
+        exercisesWithCreator.push({ ...exercise, creator })
       }),
     )
+    exercises.value = exercisesWithCreator
   } catch (error) {
     handleError('获取实验列表', error)
   }
