@@ -44,6 +44,7 @@
     // 这里等路由变化完成再清除 token，避免在 stores 中重复触发登录提醒
     await router.push('/login')
     token.value = undefined
+    userInfo.value = undefined
     ElMessage.success('已退出登录')
   }
 </script>
