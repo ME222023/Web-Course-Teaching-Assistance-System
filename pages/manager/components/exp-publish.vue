@@ -42,7 +42,6 @@
               >
                 <el-button type="primary">点击上传</el-button>
               </el-upload>
-              <ImageList :imageFileList="imageFileList" />
               <div v-if="uploadInfo.images.success + uploadInfo.images.fail > 0">
                 上传成功: {{ uploadInfo.images.success }} 张图片，上传失败:
                 {{ uploadInfo.images.fail }} 张图片
@@ -106,7 +105,6 @@
   import { ref } from 'vue'
   import { ElMessage } from 'element-plus'
   import type { FormInstance, UploadFile } from 'element-plus'
-  import ImageList from './ImageList.vue'
   import { addExercise } from '~/util/db'
   import { convertFileToBase64 } from '~/util/files'
 
