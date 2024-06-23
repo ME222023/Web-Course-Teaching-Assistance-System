@@ -1,5 +1,6 @@
 import { type LoginFailRecord, type UserInfo } from '~/types'
 import { verifyToken } from '~/util/db'
+import { handleError } from '~/util/error_parser'
 
 export const useUserStore = defineStore('user', () => {
   const router = useRouter()
@@ -19,8 +20,9 @@ export const useUserStore = defineStore('user', () => {
         return
       }
       try {
-        refetchUserInfo()
+        await userInfoLoaded()
       } catch (error: any) {
+        handleError('获取用户信息', error)
         token.value = undefined
         userInfo.value = undefined
         if (
@@ -33,6 +35,12 @@ export const useUserStore = defineStore('user', () => {
       }
     })
   })
+
+  /** 获取用户信息。假如未登录，返回 undefined */
+  async function userInfoLoaded() {
+    if (!token.value) return
+    return userInfo.value || (userInfo.value = await verifyToken(token.value))
+  }
 
   async function refetchUserInfo() {
     if (!token.value) throw new Error('未登录')
@@ -50,5 +58,6 @@ export const useUserStore = defineStore('user', () => {
     isTeacher,
 
     refetchUserInfo,
+    userInfoLoaded,
   }
 })

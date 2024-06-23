@@ -42,7 +42,7 @@
     </el-col>
     <!-- 实验详情 -->
     <el-col v-loading="loadingFetchExercise" class="!overflow-y-auto px-10" :span="19">
-      <div v-if="selectedExercise?.hasSolution !== undefined" class="flex flex-col">
+      <div v-if="selectedExercise" class="flex flex-col">
         <div class="flex items-center">
           <h2>{{ selectedExercise.title }}</h2>
           <span class="ml-auto">ID: {{ selectedExercise.id }}</span>
@@ -235,8 +235,8 @@
       })
     })
     watch(
-      () => [route.query.id, userStore.userInfo?.id],
-      async ([exerciseId]) => {
+      () => route.query.id,
+      async (exerciseId) => {
         if (!exerciseId) return
         fetchExercise(Number(exerciseId))
       },
@@ -308,8 +308,9 @@
         selectedExercise.value = undefined
         return
       }
-      if (userStore.userInfo?.id) {
-        exercise.hasSolution = !!(await getSolutionByExerciseId(id, userStore.userInfo.id))
+      const userInfo = await userStore.userInfoLoaded()
+      if (userInfo?.id) {
+        exercise.hasSolution = !!(await getSolutionByExerciseId(id, userInfo.id))
       }
       selectedExercise.value = exercise
     } catch (error) {
@@ -324,7 +325,8 @@
       exercises.value = (
         await listExercises({ keyword: searchKeyword.value, isPublished: true })
       ).map((exercise) => ({ ...exercise, hasSolution: false }))
-      if (userStore.userInfo?.id) {
+      const userInfo = await userStore.userInfoLoaded()
+      if (userInfo?.id) {
         exercises.value.forEach(async (exercise) => {
           try {
             exercise.hasSolution = !!(await getSolutionByExerciseId(

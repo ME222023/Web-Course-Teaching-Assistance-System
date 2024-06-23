@@ -1,17 +1,17 @@
 <template>
   <div class="flex flex-col ml-6 mt-2 min-w-120 w-full max-w-400">
     <el-input
-      v-model="input"
+      v-model="searchKeyword"
       style="max-width: 550px; padding: 10px"
       placeholder="输入要搜索的题目标题"
       class="input-with-select"
-      @keyup.enter="searchToResult"
+      @keyup.enter="fetchExercises()"
     >
       <template #append>
-        <el-button :icon="Search" @click="searchToResult" />
+        <el-button :icon="Search" @click="fetchExercises()" />
       </template>
     </el-input>
-    <el-table :data="combinedData1" style="width: 100%">
+    <el-table :data="combinedData" style="width: 100%">
       <el-table-column prop="id" label="题目ID" width="100" />
       <el-table-column prop="title" label="题目标题" width="180" />
       <el-table-column label="提交时间" width="170">
@@ -136,39 +136,17 @@
   const solution = ref<Solution>()
   const userStore = useUserStore()
   const combinedData = ref<ExerciseWithSolution[]>([])
-  const combinedData1 = ref<ExerciseWithSolution[]>([])
   const router = useRouter()
-  const input = ref('')
+  const searchKeyword = ref('')
 
   onMounted(() => {
-    watchEffect(async () => {
-      //初始化数据
-      combinedData.value = []
-      // console.log(combinedData.value)
-      if (!userStore.userInfo?.id) return
-      const exercises = await listExercises({ isPublished: true })
-      const solutions = await listSolution({ userId: userStore.userInfo.id })
-      console.log(solutions)
-      combinedData.value = exercises.map((exercise) => {
-        const solution = solutions
-          .filter((solution) => solution.exerciseId === exercise.id)
-          .sort((a, b) => b.createdAt - a.createdAt)
-        // console.log(solution)
-        return {
-          ...exercise,
-          latestSolution: solution[0],
-        }
-      })
-      combinedData1.value = combinedData.value
-      console.log('Combined Data:', combinedData.value)
-    })
+    fetchExercises()
   })
 
   const opendrawer = async (data: ExerciseWithSolution) => {
     drawer.value = true
     exercise.value = data
     solution.value = data.latestSolution
-    console.log(solution.value?.imageUrls)
     // solution.value = await getSolutionById(Number(data.latestSolution?.id))
   }
 
@@ -179,12 +157,21 @@
     })
   }
 
-  function searchToResult() {
-    if (input.value === '') {
-      combinedData1.value = combinedData.value
-      return
-    }
-    combinedData1.value = combinedData.value.filter((item) => item.title.includes(input.value))
+  async function fetchExercises() {
+    const userInfo = await userStore.userInfoLoaded()
+
+    if (!userInfo) return
+    const exercises = await listExercises({ isPublished: true, keyword: searchKeyword.value })
+    const solutions = await listSolution({ userId: userInfo.id })
+    combinedData.value = exercises.map((exercise) => {
+      const solution = solutions
+        .filter((solution) => solution.exerciseId === exercise.id)
+        .sort((a, b) => b.createdAt - a.createdAt)
+      return {
+        ...exercise,
+        latestSolution: solution[0],
+      }
+    })
   }
 </script>
 
