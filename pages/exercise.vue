@@ -1,6 +1,6 @@
 <template>
   <div class="flex" style="height: calc(100vh - 80px)">
-    <el-col class="!overflow-auto" :span="5">
+    <el-col class="!overflow-y-auto !overflow-x-hidden" :span="5">
       <el-input
         class="!sticky !top-0 !pt-2 !bg-white z-1"
         v-model="searchKeyword"
@@ -13,19 +13,31 @@
         </template>
       </el-input>
       <div class="flex flex-col">
-        <div v-for="exercise in exercises" class="flex items-center w-full" :key="exercise.id">
-          <el-button class="!justify-start !ml-0 !grow" text @click="changeExercise(exercise.id)">
-            {{ exercise.id }}. {{ exercise.title }}
-          </el-button>
-          <el-tooltip v-if="exercise.hasSolution" content="已提交" placement="right">
-            <el-icon>
-              <el-icon-circle-check-filled
-                v-if="exercise.hasSolution"
-                class="text-green font-bold text-20"
-              />
-            </el-icon>
-          </el-tooltip>
-        </div>
+        <el-row
+          v-for="exercise in exercises"
+          class="py-2 mr-2 !cursor-pointer hover:bg-gray-100 rounded-1 transition-all"
+          :key="exercise.id"
+          @click="changeExercise(exercise.id)"
+        >
+          <el-col class="!flex !items-center" :span="exercise.hasSolution ? 20 : 21" :offset="1">
+            <el-text
+              :type="selectedExercise?.id === exercise.id ? 'primary' : undefined"
+              line-clamp="1"
+            >
+              {{ exercise.id }}. {{ exercise.title }}
+            </el-text>
+          </el-col>
+          <el-col v-if="exercise.hasSolution" class="!flex !items-center" :span="1" :offset="1">
+            <el-tooltip content="已提交" placement="right">
+              <el-icon>
+                <el-icon-circle-check-filled
+                  v-if="exercise.hasSolution"
+                  class="text-green font-bold"
+                />
+              </el-icon>
+            </el-tooltip>
+          </el-col>
+        </el-row>
       </div>
     </el-col>
     <el-col class="!overflow-y-auto px-10" :span="19">
