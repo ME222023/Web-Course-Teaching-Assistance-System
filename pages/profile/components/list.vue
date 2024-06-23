@@ -147,7 +147,7 @@
       // console.log(combinedData.value)
       if (!userStore.userInfo?.id) return
       const exercises = await listExercises({ isPublished: true })
-      const solutions = await listSolution({userId: userStore.userInfo.id})
+      const solutions = await listSolution({ userId: userStore.userInfo.id })
       console.log(solutions)
       combinedData.value = exercises.map((exercise) => {
         const solution = solutions

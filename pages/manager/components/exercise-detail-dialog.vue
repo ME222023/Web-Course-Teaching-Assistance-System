@@ -29,10 +29,8 @@
             </el-card>
           </template>
         </el-table-column>
-        <el-table-column label="昵称" prop="user.nickname">
-        </el-table-column>
-        <el-table-column label="用户名" prop="user.username">
-        </el-table-column>
+        <el-table-column label="昵称" prop="user.nickname"> </el-table-column>
+        <el-table-column label="用户名" prop="user.username"> </el-table-column>
         <el-table-column label="提交状态">
           <template #default="{ row: data }">
             <el-tag v-if="data.solution" type="success">已提交</el-tag>
@@ -82,7 +80,7 @@
     try {
       loading.value = true
       completionInfo.value = []
-      const users = await listUser({  pageSize: 1000 })
+      const users = await listUser({ pageSize: 1000 })
       const result: ExerciseCompletionInfo[] = []
       await Promise.all(
         users.users.map(async (user) => {

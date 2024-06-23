@@ -239,7 +239,7 @@ export async function getSolutionByExerciseId(exerciseId: number, creatorId?: nu
 
 export async function isSubmitted(exerciseId: number, userId: number) {
   const solution = await db.solutions.where({ exerciseId, creatorId: userId }).first()
-  if (solution){
+  if (solution) {
     return true
   }
   return false
@@ -270,9 +270,9 @@ export async function deleteAnnouncement(id: number) {
 
 export async function editExercises(data: Partial<Omit<Exercise, 'id'>> & { id: number }) {
   // 深度克隆数据，移除不可克隆的对象
-  const cleanData = JSON.parse(JSON.stringify(data));
-  console.dir(cleanData);
-  return db.exercises.update(cleanData.id, cleanData);
+  const cleanData = JSON.parse(JSON.stringify(data))
+  console.dir(cleanData)
+  return db.exercises.update(cleanData.id, cleanData)
 }
 
 export async function deleteExercises(id: number) {
@@ -297,7 +297,7 @@ export async function listExercises(filter?: { keyword?: string; isPublished?: b
       query.and((a) => a.isPublished === Number(filter.isPublished))
     }
   }
-  
+
   return query.toArray()
 }
 
