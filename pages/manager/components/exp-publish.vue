@@ -76,15 +76,7 @@
               >
                 <el-button type="primary">点击上传</el-button>
               </el-upload>
-              <div v-if="videoFileList.length">
-                <video
-                  class="w-64 h-36"
-                  v-for="(video, key) in videoFileList"
-                  :key
-                  :src="video.url"
-                  controls
-                ></video>
-              </div>
+
               <div v-if="uploadInfo.videos.success + uploadInfo.videos.fail > 0">
                 上传成功: {{ uploadInfo.videos.success }} 个视频，上传失败:
                 {{ uploadInfo.videos.fail }} 个视频
@@ -196,7 +188,7 @@
       audios: await convertFileToBase64(audioFileList.value),
       videos: await convertFileToBase64(videoFileList.value),
     })
-    ElMessage.success('发布成功')
+    ElMessage.success('发布实验成功')
     onReset()
   }
 
