@@ -80,11 +80,11 @@
 
   const router = useRouter()
 
-  const exercises = ref<Exercise[]>([])
+  const exercises = ref<Array<Pick<Exercise, 'id' | 'title' | 'createdAt'>>>([])
   const announcements = ref<Announcement[]>([])
   const announcementInfoDialogRef = ref<InstanceType<typeof AnnouncementInfoDialog>>()
 
-  function onClickExercise(exercise?: Exercise) {
+  function onClickExercise(exercise?: { id: number }) {
     router.push({
       path: '/exercise',
       query: { id: exercise?.id },
@@ -92,7 +92,11 @@
   }
 
   async function fetchExercises() {
-    exercises.value = await listExercises({ isPublished: true })
+    exercises.value = (await listExercises({ isPublished: true })).map((exercise) => ({
+      id: exercise.id,
+      title: exercise.title,
+      createdAt: exercise.createdAt,
+    }))
   }
 
   async function fetchAnnouncements() {
