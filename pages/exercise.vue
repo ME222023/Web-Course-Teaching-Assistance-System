@@ -69,50 +69,65 @@
               controls
             ></video>
           </div>
-          <el-card shadow="never">
-            <el-form class="!flex !items-center" label-position="left">
-              <el-form-item label="编辑器主题">
-                <el-select-v2
-                  class="!w-50"
-                  v-model="editorTheme"
-                  :options="EL_SELECT_MONACO_THEMES"
-                ></el-select-v2>
-              </el-form-item>
-              <el-form-item class="ml-4" label="语言">
-                <el-select-v2
-                  class="!w-40"
-                  v-model="solution.language"
-                  :options="EL_SELECT_MONACO_LANGUAGES"
-                  filterable
-                ></el-select-v2>
-              </el-form-item>
-            </el-form>
-            <monaco-editor
-              ref="monacoEditorRef"
-              class="w-full h-100"
-              v-model="solution.content"
-              :lang="solution.language"
-              :options="{ theme: editorTheme }"
-            ></monaco-editor>
-          </el-card>
-          <span>上传图片回答</span>
-          <el-upload
-            class="uploadpng"
-            drag
-            action="#"
-            multiple
-            :on-remove="handleRemove"
-            list-type="picture"
-            :on-error="onUploadFileError"
-            :on-success="onFileChange"
-            accept="image/*"
-          >
-            <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-            <div class="el-upload__text"> Drop file here or <em>click to upload</em> </div>
-          </el-upload>
-          <el-button type="primary" :disabled="selectedExercise.hasSolution" @click="submit">
-            {{ selectedExercise.hasSolution ? '已提交过答案' : '提交' }}
-          </el-button>
+          <template v-if="userStore.userInfo">
+            <el-card class="mt-4" shadow="never">
+              <el-form class="!flex !items-center" label-position="left">
+                <el-form-item label="编辑器主题">
+                  <el-select-v2
+                    class="!w-50"
+                    v-model="editorTheme"
+                    :options="EL_SELECT_MONACO_THEMES"
+                  ></el-select-v2>
+                </el-form-item>
+                <el-form-item class="ml-4" label="语言">
+                  <el-select-v2
+                    class="!w-40"
+                    v-model="solution.language"
+                    :options="EL_SELECT_MONACO_LANGUAGES"
+                    filterable
+                  ></el-select-v2>
+                </el-form-item>
+              </el-form>
+              <monaco-editor
+                ref="monacoEditorRef"
+                class="w-full h-100"
+                v-model="solution.content"
+                :lang="solution.language"
+                :options="{ theme: editorTheme }"
+              ></monaco-editor>
+              <p class="my-2">上传图片回答</p>
+              <el-upload
+                class="uploadpng"
+                drag
+                action="#"
+                multiple
+                :on-remove="handleRemove"
+                list-type="picture"
+                :on-error="onUploadFileError"
+                :on-success="onFileChange"
+                accept="image/*"
+              >
+                <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+                <div class="el-upload__text"> Drop file here or <em>click to upload</em> </div>
+              </el-upload>
+            </el-card>
+            <el-button type="primary" :disabled="selectedExercise.hasSolution" @click="submit">
+              {{ selectedExercise.hasSolution ? '已提交过答案' : '提交' }}
+            </el-button>
+          </template>
+          <el-alert v-else class="!my-6" type="error" :closable="false" show-icon>
+            <template #title>
+              请先
+              <el-text
+                class="cursor-pointer select-none"
+                type="primary"
+                @click="$router.push('/login')"
+              >
+                登录
+              </el-text>
+              后再提交答案
+            </template>
+          </el-alert>
         </el-text>
       </div>
 
