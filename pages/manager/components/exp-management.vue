@@ -203,7 +203,10 @@
       try {
         await withdrawExercises(id)
         ElMessage.success('撤回实验成功')
-        await fetchExercises()
+        const exercise = exercises.value.find((exercise) => exercise.id === id)
+        if (exercise) {
+          exercise.isPublished = 0
+        }
       } catch (error) {
         handleError('撤回实验', error)
       }
@@ -215,7 +218,10 @@
       try {
         await repostExercises(id)
         ElMessage.success('发布实验成功')
-        await fetchExercises()
+        const exercise = exercises.value.find((exercise) => exercise.id === id)
+        if (exercise) {
+          exercise.isPublished = 1
+        }
       } catch (error) {
         handleError('发布实验', error)
       }
