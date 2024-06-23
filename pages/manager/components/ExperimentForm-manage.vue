@@ -83,7 +83,6 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, defineProps, defineEmits, watch } from 'vue'
   import { convertFileToBase64 } from '~/util/files'
 
   const props = defineProps({

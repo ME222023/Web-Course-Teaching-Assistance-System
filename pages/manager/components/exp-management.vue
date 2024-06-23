@@ -108,6 +108,7 @@
 
   const fetchExercises = async () => {
     try {
+      exercises.value = []
       const _exercises = await listExercises()
       await Promise.all(
         _exercises.map(async (exercise) => {
