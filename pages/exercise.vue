@@ -40,7 +40,8 @@
         </el-row>
       </div>
     </el-col>
-    <el-col class="!overflow-y-auto px-10" :span="19">
+    <!-- 实验详情 -->
+    <el-col v-loading="loadingFetchExercise" class="!overflow-y-auto px-10" :span="19">
       <div v-if="selectedExercise" class="flex flex-col">
         <div class="flex items-center">
           <h2>{{ selectedExercise.title }}</h2>
@@ -222,6 +223,7 @@
   })
   const monacoEditorRef = ref<InstanceType<typeof MonacoEditor>>()
   const editorTheme = ref('vs-dark')
+  const loadingFetchExercise = ref(false)
 
   onMounted(async () => {
     const stopWatchUserInfo = watchEffect(() => {
@@ -232,19 +234,9 @@
     })
     watch(
       () => [route.query.id, userStore.userInfo?.id],
-      async ([exerciseId, userId]) => {
+      async ([exerciseId]) => {
         if (!exerciseId) return
-        const _exerciseId = Number(exerciseId)
-        selectedExercise.value = await getExerciseById(_exerciseId)
-        if (!selectedExercise.value) {
-          return ElMessage.error('Exercise not found')
-        }
-        if (userId) {
-          selectedExercise.value.hasSolution = !!(await getSolutionByExerciseId(
-            _exerciseId,
-            userId as number,
-          ))
-        }
+        fetchExercise(Number(exerciseId))
       },
       { immediate: true },
     )
@@ -305,6 +297,27 @@
 
   function onUploadFileError() {
     ElMessage.error('图片异常，请更换图片')
+  }
+
+  async function fetchExercise(id: number) {
+    loadingFetchExercise.value = true
+    try {
+      const exercise: ExerciseWithSolution | undefined = await getExerciseById(id)
+      if (!exercise) {
+        ElMessage.error('题目不存在')
+        loadingFetchExercise.value = false
+        selectedExercise.value = undefined
+        return
+      }
+      if (userStore.userInfo?.id) {
+        exercise.hasSolution = !!(await getSolutionByExerciseId(id, userStore.userInfo.id))
+      }
+      selectedExercise.value = exercise
+    } catch (error) {
+      handleError('获取题目', error)
+    } finally {
+      loadingFetchExercise.value = false
+    }
   }
 
   async function fetchExercises() {
