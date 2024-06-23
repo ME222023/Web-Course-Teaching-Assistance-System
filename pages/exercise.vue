@@ -69,7 +69,7 @@
               controls
             ></video>
           </div>
-          <template v-if="userStore.userInfo">
+          <template v-if="userStore.userInfo && !selectedExercise.hasSolution">
             <el-card class="mt-4" shadow="never">
               <el-form class="!flex !items-center" label-position="left">
                 <el-form-item label="编辑器主题">
@@ -111,11 +111,15 @@
                 <div class="el-upload__text"> Drop file here or <em>click to upload</em> </div>
               </el-upload>
             </el-card>
-            <el-button type="primary" :disabled="selectedExercise.hasSolution" @click="submit">
-              {{ selectedExercise.hasSolution ? '已提交过答案' : '提交' }}
-            </el-button>
+            <el-button class="mt-4" type="primary" @click="submit"> 提交 </el-button>
           </template>
-          <el-alert v-else class="!my-6" type="error" :closable="false" show-icon>
+          <el-alert
+            v-else-if="!userStore.userInfo"
+            class="!my-6"
+            type="error"
+            :closable="false"
+            show-icon
+          >
             <template #title>
               请先
               <el-text
@@ -126,6 +130,24 @@
                 登录
               </el-text>
               后再提交答案
+            </template>
+          </el-alert>
+          <el-alert
+            v-else-if="selectedExercise.hasSolution"
+            class="!my-6"
+            type="success"
+            :closable="false"
+            show-icon
+          >
+            <template #title>
+              已提交过答案，不可重复提交。
+              <el-text
+                class="cursor-pointer select-none"
+                type="primary"
+                @click="$router.push('/profile')"
+              >
+                查看完成情况
+              </el-text>
             </template>
           </el-alert>
         </el-text>
