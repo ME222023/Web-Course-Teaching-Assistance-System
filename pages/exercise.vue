@@ -175,17 +175,24 @@
   const editorTheme = ref('vs-dark')
 
   onMounted(async () => {
-    fetchExercises()
+    const stopWatchUserInfo = watchEffect(() => {
+      if (userStore.userInfo) {
+        nextTick(() => {
+          stopWatchUserInfo()
+          fetchExercises()
+        })
+      }
+    })
     watch(
-      () => route.query.id,
-      async (exerciseId) => {
-        if (!exerciseId) return
+      () => [route.query.id, userStore.userInfo?.id],
+      async ([exerciseId, userId]) => {
+        if (!exerciseId || !userId) return
         const _exerciseId = Number(exerciseId)
         selectedExercise.value = await getExerciseById(_exerciseId)
         if (!selectedExercise.value) {
           return ElMessage.error('Exercise not found')
         }
-        selectedExercise.value.hasSolution = !!(await getSolutionByExerciseId(_exerciseId))
+        selectedExercise.value.hasSolution = !!(await getSolutionByExerciseId(_exerciseId, userId as number))
       },
       { immediate: true },
     )
@@ -253,7 +260,7 @@
       exercises.value = await listExercises({ keyword: searchKeyword.value, isPublished: true })
       exercises.value.forEach(async (exercise) => {
         try {
-          exercise.hasSolution = !!(await getSolutionByExerciseId(exercise.id))
+          exercise.hasSolution = !!(await getSolutionByExerciseId(exercise.id, userStore.userInfo!.id))
         } catch (error) {
           handleError(`获取题目 ${exercise.id} 答案`, error)
         }
