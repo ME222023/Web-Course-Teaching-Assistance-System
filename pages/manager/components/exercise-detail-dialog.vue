@@ -29,10 +29,9 @@
             </el-card>
           </template>
         </el-table-column>
-        <el-table-column label="用户名">
-          <template #default="{ row: data }">
-            <span>{{ data.user.nickname ?? data.user.username }}</span>
-          </template>
+        <el-table-column label="昵称" prop="user.nickname">
+        </el-table-column>
+        <el-table-column label="用户名" prop="user.username">
         </el-table-column>
         <el-table-column label="提交状态">
           <template #default="{ row: data }">
