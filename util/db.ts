@@ -284,6 +284,10 @@ export async function withdrawExercises(id: number) {
   const flag = await db.exercises.where({ id, isPublished: 1 }).modify({ isPublished: 0 })
 }
 
+export async function repostExercises(id: number) {
+  const flag = await db.exercises.where({ id, isPublished: 0 }).modify({ isPublished: 1 })
+}
+
 export async function listExercises(filter?: { keyword?: string; isPublished?: boolean }) {
   const query = db.exercises.where({ isDeleted: 0 })
 
