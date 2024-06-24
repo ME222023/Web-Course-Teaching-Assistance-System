@@ -275,8 +275,9 @@
       ElMessage.error('已提交过答案')
       return
     }
+    const exerciseId = Number(route.query.id)
     solution.value.createdAt = Date.now()
-    solution.value.exerciseId = Number(route.query.id)
+    solution.value.exerciseId = exerciseId
     solution.value.imageUrls = base64
     solution.value.creatorId = userStore.userInfo.id
     if (!solution.value.content && !solution.value.imageUrls.length) {
@@ -288,7 +289,11 @@
 
       await addSolution(solutionClone)
       ElMessage.success('提交成功')
-      router.replace('/profile')
+      const exercise = exercises.value.find((exercise) => exercise.id === exerciseId)
+      if (exercise) {
+        exercise.hasSolution = true
+        selectedExercise.value!.hasSolution = true
+      }
     } catch (error) {
       handleError('提交', error)
     }
