@@ -47,6 +47,17 @@
                 上传成功: {{ uploadInfo.images.success }} 张图片，上传失败:
                 {{ uploadInfo.images.fail }} 张图片
               </div>
+              <div v-if="imageFileList.length > 0" class="image-preview">
+                <el-image
+                  v-for="(file, index) in imageFileList"
+                  :key="file.uid"
+                  :src="file.url"
+                  :preview-src-list="previewSrcList"
+                  :initial-index="index"
+                  fit="cover"
+                  class="image-item"
+                />
+              </div>
             </el-form-item>
             <el-form-item label="上传音频">
               <el-upload
@@ -224,6 +235,11 @@
     uploadInfo.value.videos.success = 0
     uploadInfo.value.videos.fail = 0
   }
+
+  // 获取图片的预览 URL 列表
+  const previewSrcList = computed(() => {
+    return imageFileList.value.map((file) => file.url)
+  })
 </script>
 
 <style scoped>
@@ -239,5 +255,17 @@
   .upload-info {
     margin-top: 10px;
     color: #666;
+  }
+  .image-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .image-item {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    cursor: pointer;
   }
 </style>
