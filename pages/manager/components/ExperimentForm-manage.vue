@@ -24,6 +24,7 @@
         action="#"
         list-type="picture"
         multiple
+        method="get"
         accept="image/jpeg,image/png"
         :file-list="imageFileList"
         :on-success="handleImageUpload"
@@ -41,6 +42,7 @@
       <el-upload
         action="#"
         multiple
+        method="get"
         accept="audio/mp3,audio/wav"
         v-model:file-list="audioFileList"
         :on-success="handleAudioUpload"
@@ -59,6 +61,7 @@
         action="#"
         multiple
         accept="video/mp4"
+        method="get"
         v-model:file-list="videoFileList"
         :on-success="handleVideoUpload"
         :on-remove="handleRemove('videos')"

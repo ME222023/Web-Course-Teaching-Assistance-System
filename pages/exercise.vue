@@ -113,6 +113,7 @@
                 class="uploadpng"
                 drag
                 action="#"
+                method="get"
                 multiple
                 list-type="picture"
                 :on-error="onUploadFileError"
