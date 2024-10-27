@@ -92,11 +92,13 @@
   }
 
   async function fetchExercises() {
-    exercises.value = (await listExercises({ isPublished: true })).map((exercise) => ({
-      id: exercise.id,
-      title: exercise.title,
-      createdAt: exercise.createdAt,
-    }))
+    exercises.value = (await listExercises({ isPublished: true, descending: true })).map(
+      (exercise) => ({
+        id: exercise.id,
+        title: exercise.title,
+        createdAt: exercise.createdAt,
+      }),
+    )
   }
 
   async function fetchAnnouncements() {

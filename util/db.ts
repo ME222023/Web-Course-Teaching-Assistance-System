@@ -256,7 +256,7 @@ export async function listAnnouncement(filter?: { keyword?: string }) {
     query.and((a) => a.title.includes(filter.keyword!))
   }
 
-  return query.toArray()
+  return await query.reverse().sortBy('createdAt')
 }
 
 export async function editAnnouncement(data: Partial<Omit<Announcement, 'id'>> & { id: number }) {
@@ -288,7 +288,12 @@ export async function repostExercises(id: number) {
   const flag = await db.exercises.where({ id, isPublished: 0 }).modify({ isPublished: 1 })
 }
 
-export async function listExercises(filter?: { keyword?: string; isPublished?: boolean }) {
+export async function listExercises(filter?: {
+  keyword?: string
+  isPublished?: boolean
+  /** 是否从新到旧 */
+  descending?: boolean
+}) {
   const query = db.exercises.where({ isDeleted: 0 })
 
   if (filter) {
@@ -296,9 +301,10 @@ export async function listExercises(filter?: { keyword?: string; isPublished?: b
     if (filter.isPublished !== undefined) {
       query.and((a) => a.isPublished === Number(filter.isPublished))
     }
+    if (filter.descending) query.reverse()
   }
 
-  return query.toArray()
+  return query.sortBy('createdAt')
 }
 
 export async function addExercise(

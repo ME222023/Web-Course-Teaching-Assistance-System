@@ -238,7 +238,7 @@
 
   // 获取图片的预览 URL 列表
   const previewSrcList = computed(() => {
-    return imageFileList.value.map((file) => file.url)
+    return imageFileList.value.map((file) => file.url!)
   })
 </script>
 
